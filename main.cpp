@@ -1,44 +1,39 @@
 
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
-
-#include <Windows.h>
-#include <GameMusic.h>
 
 
-const size_t HEIGHT = 1028;
-const size_t WIDTH = 768;
+//#include <GameMusic.h>
+#include <Universe.h>
+#include <ctime>
+
+const size_t HEIGHT = 768;
+const size_t WIDTH = 1028;
 
 
 
 int main() {
+    srand(static_cast<unsigned>(time(NULL)));
     std::cout << "Started\n";
     setlocale(LC_ALL, "ru");
-    sf::RenderWindow window(sf::VideoMode(HEIGHT, WIDTH), L"ULTRAGAMIN");
-    
-    //инициализируем музыку\звуки
-    gm::GameMusic sounds;
-    try {
-        sounds.SetMusic(BACK_MUSIC, MUSICFILE);
-        sounds.AddSound(TREE, MUSICFILE);
-    }
-    catch (const std::exception& ex) {
-        std::cerr << ex.what() << '\n';
-    }
-    sounds.playMusic(true);
-    //sounds.playSound(TREE);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), L"ULTRAGAMIN");
+    window.setFramerateLimit(60);
+
+    //инициализируем нашу вселенную
+    Universe universe;
+    universe.init();
+    universe.playMusic();
+    universe.playSound(TREE);
+
     
     //перечесления для выбора режима - пауза(стартовое окно)\сама игра\режим редактирования\выход
     enum Play {
         PAUSE,
         GAME,
-        EDIT,
         EXIT
     } now = PAUSE;
 
-  
 
+    
 
 
     while (window.isOpen()) {
@@ -50,14 +45,11 @@ int main() {
         
         switch (now) {
             case PAUSE:
-                //TheMap.pause();
+                //universe.pause();
                 break;
                 //TheMap.pause();
 
             case GAME:
-                break;
-
-            case EDIT:
                 break;
 
             case EXIT:
@@ -65,7 +57,8 @@ int main() {
 
         }
         
-        window.clear(sf::Color::Cyan);
+        window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
+        universe.draw(window);
         window.display();
     }
 

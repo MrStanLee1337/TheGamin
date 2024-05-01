@@ -14,9 +14,8 @@
 #endif
 
 
-#define TEXTFILE 255
-#define DEMO_TEXT 254
 
-#define MUSICFILE 253
-#define BACK_MUSIC 252
-#define TREE 251
+
+#define MUSICFILE 255
+#define BACK_MUSIC 254
+#define TREE 253
