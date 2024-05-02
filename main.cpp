@@ -12,6 +12,7 @@ const size_t WIDTH = 1028;
 
 
 int main() {
+    system("chcp 1251");
     srand(static_cast<unsigned>(time(NULL)));
     std::cout << "Started\n";
     setlocale(LC_ALL, "ru");
