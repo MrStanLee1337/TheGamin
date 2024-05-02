@@ -20,7 +20,7 @@ int main() {
 
     //инициализируем нашу вселенную
     Universe universe;
-    universe.init();
+    universe.init(window);
     universe.playMusic();
     universe.playSound(TREE);
 

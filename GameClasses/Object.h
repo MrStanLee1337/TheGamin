@@ -5,9 +5,10 @@
 
 class Object {
 	private:
+        bool visibility = true;
         sf::Sprite sprite;
         sf::Texture texture;
-        void savePngToMemory(const char* filename) {
+        bool savePngToMemory(const char* filename) {
             FILE* file;
             if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
             if (file) {
@@ -28,19 +29,31 @@ class Object {
                 free(fileBuffer);
                 free(memoryBuffer);
             }
+            return true;
         }
 	public:
-		Object(const char* filename) {
-            try {
-                savePngToMemory(filename);
-            } catch (const std::exception ex) {
-                std::cerr << ex.what() << '\n';
-            }
+        Object() {}
+		Object(const char* filename) throw(){
+            setPicture(filename); 
         }
+
+        void setPosition(int x, int y) {
+            sprite.setPosition(x, y);
+        }
+
+        void setPicture(const char* filename) throw() {
+            if (!savePngToMemory(filename)) throw std::runtime_error("Can't open png file.\n");
+        }
+
 		~Object() {}
+
         void draw(sf::RenderWindow& window) {
             window.draw(sprite);
         }
+
+        bool isVisible() { return visibility; }
+        bool setVisibility(bool b) { visibility = b; }
+        sf::Texture getTexture() { return texture; }
 
 };
 

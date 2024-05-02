@@ -14,8 +14,9 @@ class Universe {
 	private:
 		gm::GameMusic sounds;
         std::vector<std::unique_ptr<Object>> tiles;
-
-		void initmusic() throw() {
+        std::vector<std::unique_ptr<Object>> pausemenu;
+        sf::Cursor cursor;
+		void initmusic() {
             try {
                 sounds.SetMusic(BACK_MUSIC, MUSICFILE);
                 sounds.AddSound(TREE, MUSICFILE);
@@ -26,7 +27,7 @@ class Universe {
             //sounds.playMusic(true);
 		}
 
-        void inittiles() throw(){
+        void inittiles(){
             try {
                 tiles.push_back(std::make_unique<Object>("tiles\\backwater.png"));
             }
@@ -34,6 +35,20 @@ class Universe {
                 std::cerr << ex.what() << '\n';
             }
         }
+
+        void initcursor(sf::RenderWindow& window) {
+            try {
+                Object texture("tiles\\cursor.png");
+                sf::Image image = texture.getTexture().copyToImage();
+                int width = image.getSize().x; int height = image.getSize().y;
+                cursor.loadFromPixels(image.getPixelsPtr(), sf::Vector2u(width,height), sf::Vector2u(0,0));
+                window.setMouseCursor(cursor);
+            }
+            catch (const std::exception& ex) {
+                std::cerr << ex.what();
+            }
+        }
+        
 	public:
 		Universe()  {}
         void playMusic() {
@@ -43,17 +58,24 @@ class Universe {
         void playSound(int lpName) {
             sounds.playSound(lpName);
         }
-        void init() {
+        void init(sf::RenderWindow& window) {
             initmusic();
             inittiles();
+            initcursor(window);
         }
+
+        void pause() {
+        
+        }
+
         void draw(sf::RenderWindow& window) {
             //auto botptr = dynamic_cast<Bot*>(&*obj)
             
             for (auto& obj : tiles) //*obj.draw(window);
             {
                 if(auto botptr = dynamic_cast<Object*>(&*obj))
-                    botptr->draw(window);
+                    if(botptr->isVisible())
+                        botptr->draw(window);
             }
         }
 
