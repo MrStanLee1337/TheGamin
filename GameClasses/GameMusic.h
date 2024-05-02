@@ -42,20 +42,18 @@ namespace gm {
 			~GameMusic() {}
 
 			void SetMusic(const int lpName, const int lpType) throw(){
-				char* hFinal;
-				DWORD hSize;
-				std::pair<char*&, DWORD>(hFinal, hSize) = FindInMemory(lpName, lpType);
-				
-				if(!Melody.openFromMemory(hFinal, hSize)) throw std::runtime_error("Musicfile не удалось открыть.\n");
+				//char* hFinal = nullptr;
+				//DWORD hSize = NULL;
+				//std::pair<char*&, DWORD> (hFinal, hSize) = FindInMemory(lpName, lpType);
+				auto data = FindInMemory(lpName, lpType);
+				if(!Melody.openFromMemory(data.first, data.second)) throw std::runtime_error("Musicfile не удалось открыть.\n");
 			}
 			
 			
 			void AddSound(const int lpName, const int lpType) throw() {
-				char* hFinal;
-				DWORD hSize;
-				std::pair<char*&, DWORD>(hFinal, hSize) = FindInMemory(lpName, lpType);
+				auto data =  FindInMemory(lpName, lpType);
 				sf::SoundBuffer SB;
-				if (!SB.loadFromMemory(hFinal, hSize)) throw std::runtime_error("Soundfile не удалось открыть.\n");
+				if (!SB.loadFromMemory(data.first, data.second)) throw std::runtime_error("Soundfile не удалось открыть.\n");
 				Sounds[lpName] = SB;
 			}
 
