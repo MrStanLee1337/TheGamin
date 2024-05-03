@@ -27,36 +27,12 @@ int main() {
 
     
     //перечесления для выбора режима - пауза(стартовое окно)\сама игра\выход
-    enum Play {
-        PAUSE,
-        GAME,
-        EXIT
-    } now = PAUSE;
-
-
-    
 
 
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
         
-        switch (now) {
-            case PAUSE:
-                //universe.pause();
-                break;
-                //TheMap.pause();
-
-            case GAME:
-                break;
-
-            case EXIT:
-                window.close();
-
-        }
+        universe.pendingAction();
+        universe.state();
         
         window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
         universe.draw();
