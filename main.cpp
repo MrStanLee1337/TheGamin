@@ -20,8 +20,8 @@ int main() {
     window.setFramerateLimit(60);
 
     //инициализируем нашу вселенную
-    Universe universe;
-    universe.init(window);
+    Universe universe(window, WIDTH, HEIGHT);
+    universe.init();
     universe.playMusic();
     universe.playSound(TREE);
 
@@ -59,7 +59,7 @@ int main() {
         }
         
         window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
-        universe.draw(window);
+        universe.draw();
         window.display();
     }
 

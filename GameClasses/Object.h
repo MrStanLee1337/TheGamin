@@ -8,6 +8,7 @@ class Object {
         bool visibility = true;
         sf::Sprite sprite;
         sf::Texture texture;
+        int name = 0;
         bool savePngToMemory(const char* filename) {
             FILE* file;
             if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
@@ -36,9 +37,12 @@ class Object {
 		Object(const char* filename) throw(){
             setPicture(filename); 
         }
-
+        Object(const char* filename, int x, int y) {
+            setPicture(filename);
+            sprite.setPosition((float)x, (float)y);
+        }
         void setPosition(int x, int y) {
-            sprite.setPosition(x, y);
+            sprite.setPosition(float(x), float(y));
         }
 
         void setPicture(const char* filename) throw() {
