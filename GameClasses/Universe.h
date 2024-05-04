@@ -21,6 +21,7 @@ class Universe {
         
         sf::Cursor cursor;
         sf::Event event;
+    
         
 
         enum GameState {
@@ -65,9 +66,9 @@ class Universe {
 
         void initpause() {
             try {
-                pausemenu.push_back(std::make_unique<Object>("tiles\\play.png", WIDTH / 2 - 110, HEIGHT / 2));
-                pausemenu.push_back(std::make_unique<Object>("tiles\\exit.png", WIDTH / 2 - 110, HEIGHT / 3 * 2));
-                pausemenu.push_back(std::make_unique<Object>("tiles\\title.png", WIDTH / 2 - 260, HEIGHT / 12));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\play.png", WIDTH / 2 - 110, HEIGHT / 2, "play"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\exit.png", WIDTH / 2 - 110, HEIGHT / 3 * 2, "exit"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\title.png", WIDTH / 2 - 260, HEIGHT / 12, "title"));
             }   catch (const std::exception& ex) {
                 std::cerr << ex.what() << '\n';
             }
@@ -97,14 +98,17 @@ class Universe {
         }
 
         void pendingMouse() {
-            if (event.type == sf::Event::MouseLeft) {
-                float x = sf::Mouse::getPosition().x;
-                float y = sf::Mouse::getPosition().y;
+            if (event.type == sf::Event::MouseButtonPressed) {
+                
+                float x = sf::Mouse::getPosition(window).x;
+                float y = sf::Mouse::getPosition(window).y;
                 if (now == PAUSE) {
+                    _debug(13);
                     for (auto& obj : pausemenu) {
                         if (auto ptr = dynamic_cast<Object*>(&*obj)) {
                             if (ptr->isClicked(x, y)) {
-
+                                if (ptr->getType() == "exit") exit();
+                                if (ptr->getType() == "play") game();
                             }
                         }
                     }

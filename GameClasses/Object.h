@@ -8,7 +8,7 @@ class Object {
         bool visibility = true;
         sf::Sprite sprite;
         sf::Texture texture;
-        int name = 0;// id
+        const char* type = ""; // хранит тип объекта (кнопки) для определения с чем мы взимодействуем
         bool savePngToMemory(const char* filename) {
             FILE* file;
             if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
@@ -34,10 +34,10 @@ class Object {
         }
 	public:
         Object() {}
-		Object(const char* filename, int name = 0) throw() : name(name){
+        Object(const char* filename, const char* type = "") throw() : type(type) {
             setPicture(filename); 
         }
-        Object(const char* filename, int x, int y, int name = 0) : name(name){
+        Object(const char* filename, int x, int y, const char* type = 0) throw() : type(type) {
             setPicture(filename);
             sprite.setPosition((float)x, (float)y);
         }
@@ -61,6 +61,10 @@ class Object {
 
         bool isClicked(int x, int y) {
             return sprite.getGlobalBounds().contains(x, y);
+        }
+
+        const char* getType() {
+            return type;
         }
 };
 
