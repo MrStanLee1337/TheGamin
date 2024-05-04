@@ -7,7 +7,10 @@ class Object {
 	private:
         bool visibility = true;
         sf::Sprite sprite;
-        sf::Texture texture;
+        //sf::Texture texture;
+        std::vector<sf::Texture> animation;
+        //std::vector<sf::Texture>::iterator frame = animation.begin();
+        int frame = 0;
         const char* type = ""; // хранит тип объекта (кнопки) для определения с чем мы взимодействуем
         bool savePngToMemory(const char* filename) {
             FILE* file;
@@ -24,8 +27,10 @@ class Object {
                 void* memoryBuffer = malloc(fileSize);
                 memcpy(memoryBuffer, fileBuffer, fileSize);
 
+                sf::Texture texture;
                 texture.loadFromMemory(memoryBuffer, fileSize);
-                sprite.setTexture(texture);
+                animation.push_back(texture);
+                sprite.setTexture(animation[animation.size() - 1]);
 
                 free(fileBuffer);
                 free(memoryBuffer);
@@ -34,30 +39,56 @@ class Object {
         }
 	public:
         Object() {}
-        Object(const char* filename, const char* type = "") throw() : type(type) {
-            setPicture(filename); 
+        ~Object() {}
+        Object(const char* filename, const char* type = nullptr) throw() : type(type) {
+            addPicture(filename); 
         }
-        Object(const char* filename, int x, int y, const char* type = 0) throw() : type(type) {
-            setPicture(filename);
+        Object(const char* filename, int x, int y, const char* type = nullptr) throw() : type(type) {
+            addPicture(filename);
             sprite.setPosition((float)x, (float)y);
         }
+        
+
+        void addPicture(const char* filename) throw() {// download pic to sprite
+            if (!savePngToMemory(filename)) throw std::runtime_error("Can't open png file.\n");
+        }
+
+        void addPicture(sf::Image image) {
+            //texture.loadFromImage(image);
+            sf::Texture texture;
+            texture.loadFromImage(image);
+            animation.push_back(texture);
+            sprite.setTexture(texture);   
+        }
+        
+		
+
         void setPosition(int x, int y) {
             sprite.setPosition(float(x), float(y));
         }
 
-        void setPicture(const char* filename) throw() {
-            if (!savePngToMemory(filename)) throw std::runtime_error("Can't open png file.\n");
+        void setPosition(sf::Vector2f xy) {
+            sprite.setPosition(xy);
         }
 
-		~Object() {}
+        sf::Vector2f getPosition() {
+            return sprite.getPosition();
+        }
 
         void draw(sf::RenderWindow& window) {
             window.draw(sprite);
         }
 
+        void nextFrame() {
+            ++frame;
+            if (frame == animation.size()) frame = 0;
+            sprite.setTexture(animation[frame]);
+        }
+
+
         bool isVisible() { return visibility; }
         bool setVisibility(bool b) { visibility = b; }
-        sf::Texture getTexture() { return texture; }
+        sf::Texture getTexture() { return animation[frame]; }
 
         bool isClicked(int x, int y) {
             return sprite.getGlobalBounds().contains(x, y);

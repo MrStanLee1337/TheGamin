@@ -13,10 +13,10 @@ const size_t WIDTH = 1028;
 
 int main() {
     system("chcp 1251");
+    setlocale(LC_ALL, "ru");
     srand(static_cast<unsigned>(time(NULL)));
     std::cout << "Started\n";
-    setlocale(LC_ALL, "ru");
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), L"ULTRAGAMIN");
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), L"Sprout Lands :)");
     window.setFramerateLimit(60);
 
     //инициализируем нашу вселенную
@@ -30,11 +30,11 @@ int main() {
 
 
     while (window.isOpen()) {
-        
         universe.pendingAction();
         universe.state();
-        
-        window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
+        universe.tickrate();
+        universe.animation();
+        //window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
         universe.draw();
         window.display();
     }

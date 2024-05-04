@@ -8,7 +8,7 @@
 
 #include <GameMusic.h>
 #include <Object.h>
-
+#include <Character.h>
 
 class Universe {
 	private:
@@ -21,8 +21,11 @@ class Universe {
         
         sf::Cursor cursor;
         sf::Event event;
-    
-        
+
+        DWORD ticks = 0;// тики для анимации
+
+        Character Bunny;
+
 
         enum GameState {
             PAUSE,
@@ -103,7 +106,6 @@ class Universe {
                 float x = sf::Mouse::getPosition(window).x;
                 float y = sf::Mouse::getPosition(window).y;
                 if (now == PAUSE) {
-                    _debug(13);
                     for (auto& obj : pausemenu) {
                         if (auto ptr = dynamic_cast<Object*>(&*obj)) {
                             if (ptr->isClicked(x, y)) {
@@ -129,13 +131,29 @@ class Universe {
         }
 
         void init() {
+            Bunny.initAnimation();
             initmusic();
             inittiles();
             initcursor();
             initpause();
         }
 
-        
+        void tickrate() {
+            ++(ticks %= 600);//10 секунд
+        }
+
+        void animation() {
+            if (!(ticks % 60)) {
+                int offset = ticks < 200 ? 3 : ticks > 400 ? -3 : 0;
+                if (now == PAUSE) {
+                    for (auto& obj : pausemenu) {
+                        if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+                            ptr->setPosition(ptr->getPosition().x, ptr->getPosition().y + offset);
+                        }
+                    }
+                }
+            }
+        }
 
         void pendingAction() {
             while (window.pollEvent(event)) {
@@ -166,6 +184,7 @@ class Universe {
                     if(ptr->isVisible())
                         ptr->draw(window);
             }
+            
             if (now == PAUSE) {
                 for (auto& obj : pausemenu) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
@@ -173,6 +192,8 @@ class Universe {
                     }
                 }
             }
+            if (!(ticks % 20)) Bunny.nextFrame();
+            Bunny.draw(window);
         }
 
 };
