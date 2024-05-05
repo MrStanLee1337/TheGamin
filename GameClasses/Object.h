@@ -3,6 +3,36 @@
 #include <Windows.h>
 #include <cstdio>
 
+bool getDataFromImage(const char* filename, void*& buffer, long& size) {
+    FILE* file;
+    if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
+    if (file) {
+        fseek(file, 0, SEEK_END);
+        long fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        char* fileBuffer = (char*)malloc(fileSize);
+        fread(fileBuffer, 1, fileSize, file);
+        fclose(file);
+
+        void* memoryBuffer = malloc(fileSize);
+        memcpy(memoryBuffer, fileBuffer, fileSize);
+        
+        buffer = memoryBuffer;
+        size = fileSize;
+        
+        /*
+        sf::Texture texture;
+        texture.loadFromMemory(memoryBuffer, fileSize);
+        animation.push_back(texture);
+        sprite.setTexture(animation.back());
+        */
+        free(fileBuffer);
+        
+    }
+    return true;
+}
+
 class Object {
 	private:
         bool visibility = true;
@@ -10,34 +40,11 @@ class Object {
         std::vector<sf::Texture> animation;
         int frame = 0;
         const char* type = ""; // хранит тип объекта (кнопки, объекта) для определения с чем мы взимодействуем
-        bool savePngToMemory(const char* filename) {
-            FILE* file;
-            if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
-            if (file) {
-                fseek(file, 0, SEEK_END);
-                long fileSize = ftell(file);
-                fseek(file, 0, SEEK_SET);
 
-                char* fileBuffer = (char*)malloc(fileSize);
-                fread(fileBuffer, 1, fileSize, file);
-                fclose(file);
-
-                void* memoryBuffer = malloc(fileSize);
-                memcpy(memoryBuffer, fileBuffer, fileSize);
-
-                sf::Texture texture;
-                texture.loadFromMemory(memoryBuffer, fileSize);
-                animation.push_back(texture);
-                sprite.setTexture(animation[animation.size() - 1]);
-
-                free(fileBuffer);
-                free(memoryBuffer);
-            }
-            return true;
-        }
+        
 	public:
         Object() {}
-        ~Object() {}
+        ~Object() {  }
         Object(const char* filename, const char* type = nullptr) throw() : type(type) {
             addPicture(filename); 
         }
@@ -48,14 +55,23 @@ class Object {
         
 
         void addPicture(const char* filename) throw() {// download pic to sprite
-            if (!savePngToMemory(filename)) throw std::runtime_error("Can't open png file.\n");
+            void* filebuffer = nullptr;
+            long filesize = 0;
+            if(!getDataFromImage(filename, filebuffer, filesize)) throw std::runtime_error("Can't open png file.\n");
+            else {
+                sf::Texture texture;
+                texture.loadFromMemory(filebuffer, filesize);
+                animation.push_back(texture);
+                sprite.setTexture(animation.back());
+            }
+            free(filebuffer);
         }
 
         void addPicture(sf::Image image) {
             sf::Texture texture;
             texture.loadFromImage(image);
             animation.push_back(texture);
-            sprite.setTexture(animation[animation.size() - 1]);
+            sprite.setTexture(animation.back());
         }
         
 		

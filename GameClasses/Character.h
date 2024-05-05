@@ -32,9 +32,13 @@ class Character {
 				sf::Image movement;
 				sf::Image part;
 				part.create(16, 16);
-
-				movement.loadFromFile("tiles\\movement.png");
 				
+				void* filebuffer = nullptr;
+				long filesize = 0;
+				if(!getDataFromImage("tiles\\movement.png", filebuffer, filesize)) throw std::runtime_error("Can't open movement.png file.\n");
+				movement.loadFromMemory(filebuffer, filesize);
+				free(filebuffer);
+
 				for (int i = 0; i < 4; i++) { 
 					part.copy(movement, 0, 0, sf::IntRect(i * 16,  0, (i + 1) * 16,  16));
 					down.addPicture(part);
@@ -50,6 +54,7 @@ class Character {
 				afk.addPicture(part);
 				part.copy(movement, 0, 0, sf::IntRect(16, 0, 32, 16));
 				afk.addPicture(part);
+				
 
 			} catch (const std::exception& ex) {
 				std::cerr << ex.what() << '\n';
