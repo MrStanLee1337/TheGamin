@@ -94,8 +94,16 @@ class Universe {
 
         void pendingKeyboard() {
             if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Escape) {
-                    switchPause();
+                if (event.key.code == sf::Keyboard::Escape) switchPause(); 
+                else
+                if (now == GAME) {
+                    if (event.key.code == sf::Keyboard::A) Bunny.moveleft(); 
+                    else
+                    if (event.key.code == sf::Keyboard::D) Bunny.moveright(); 
+                    else
+                    if (event.key.code == sf::Keyboard::W) Bunny.moveup(); 
+                    else
+                    if (event.key.code == sf::Keyboard::S) Bunny.movedown();
                 }
             }
         }
@@ -160,7 +168,6 @@ class Universe {
                 if (event.type == sf::Event::Closed) window.close();
                 pendingKeyboard();
                 pendingMouse();
-                
             }
         }
 

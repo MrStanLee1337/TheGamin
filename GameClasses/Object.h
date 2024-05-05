@@ -7,11 +7,9 @@ class Object {
 	private:
         bool visibility = true;
         sf::Sprite sprite;
-        //sf::Texture texture;
         std::vector<sf::Texture> animation;
-        //std::vector<sf::Texture>::iterator frame = animation.begin();
         int frame = 0;
-        const char* type = ""; // хранит тип объекта (кнопки) для определения с чем мы взимодействуем
+        const char* type = ""; // хранит тип объекта (кнопки, объекта) для определения с чем мы взимодействуем
         bool savePngToMemory(const char* filename) {
             FILE* file;
             if (fopen_s(&file, filename, "rb"))  throw std::runtime_error("Can't open png file.\n");
@@ -54,7 +52,6 @@ class Object {
         }
 
         void addPicture(sf::Image image) {
-            //texture.loadFromImage(image);
             sf::Texture texture;
             texture.loadFromImage(image);
             animation.push_back(texture);
@@ -75,7 +72,8 @@ class Object {
             return sprite.getPosition();
         }
 
-        void draw(sf::RenderWindow& window) {
+        void draw(sf::RenderWindow& window, int x = -1, int y = -1) {
+            if (x != -1 && y != -1) sprite.setPosition(x, y);
             window.draw(sprite);
         }
 

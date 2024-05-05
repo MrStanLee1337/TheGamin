@@ -1,8 +1,4 @@
 
-
-
-
-//#include <GameMusic.h>
 #include <Universe.h>
 #include <ctime>
 
@@ -25,17 +21,13 @@ int main() {
     universe.playMusic();
     universe.playSound(TREE);
 
-    
-    //перечесления для выбора режима - пауза(стартовое окно)\сама игра\выход
-
 
     while (window.isOpen()) {
-        universe.pendingAction();
-        universe.state();
-        universe.tickrate();
-        universe.animation();
-        //window.clear(sf::Color(rand()%256, rand()%256, rand()%256));
-        universe.draw();
+        universe.pendingAction();//ждем команды
+        universe.state();//определяем статус игры(пауза, игра)
+        universe.tickrate();//тики для анимации
+        universe.animation();//анимация
+        universe.draw();//рисуем все что visible
         window.display();
     }
 
