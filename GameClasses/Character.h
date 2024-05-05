@@ -6,7 +6,6 @@ class Character {
 
 	private:
 		//анимации ходьбы
-		bool isMoving = true;
 		Object down;// каждый объект хранит вектор фреймов для анимации ходьбы
 		Object up;
 		Object left;
@@ -21,7 +20,7 @@ class Character {
 			LEFT,
 			RIGHT,
 			AFK
-		} direction = RIGHT;
+		} direction = AFK;
 	public:
 		Character() {}
 		~Character() {}

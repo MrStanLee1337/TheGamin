@@ -55,7 +55,7 @@ class Object {
             sf::Texture texture;
             texture.loadFromImage(image);
             animation.push_back(texture);
-            sprite.setTexture(texture);   
+            sprite.setTexture(animation[animation.size() - 1]);
         }
         
 		
@@ -78,8 +78,7 @@ class Object {
         }
 
         void nextFrame() {
-            ++frame;
-            if (frame == animation.size()) frame = 0;
+            if (++frame == animation.size()) frame = 0;
             sprite.setTexture(animation[frame]);
         }
 
