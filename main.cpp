@@ -27,6 +27,7 @@ int main() {
         universe.state();//определяем статус игры(пауза, игра)
         universe.tickrate();//тики для анимации
         universe.animation();//анимация
+        window.clear();
         universe.draw();//рисуем все что visible
         window.display();
     }

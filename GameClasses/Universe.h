@@ -9,13 +9,14 @@
 #include <GameMusic.h>
 #include <Object.h>
 #include <Character.h>
+#include <MyMap.h>
 
 class Universe {
 	private:
 
         int WIDTH, HEIGHT;
 		gm::GameMusic sounds;
-        std::vector<std::unique_ptr<Object>> tiles;
+        //std::vector<std::unique_ptr<Object>> tiles;
         std::vector<std::unique_ptr<Object>> pausemenu;
         sf::RenderWindow& window;
         
@@ -25,7 +26,7 @@ class Universe {
         DWORD ticks = 0;// тики для анимации
 
         Character Bunny;
-
+        MyMap mymap;
 
         enum GameState {
             PAUSE,
@@ -44,7 +45,7 @@ class Universe {
             }
             //sounds.playMusic(true);
 		}
-
+        /*
         void inittiles(){
             try {
                 tiles.push_back(std::make_unique<Object>("tiles\\backwater.png"));
@@ -53,7 +54,7 @@ class Universe {
                 std::cerr << ex.what() << '\n';
             }
         }
-
+        */
         void initcursor() {
             try {
                 Object texture("tiles\\cursor.png");
@@ -140,8 +141,9 @@ class Universe {
 
         void init() {
             Bunny.initAnimation();
+            mymap.initTiles();
             initmusic();
-            inittiles();
+            //inittiles();
             initcursor();
             initpause();
         }
@@ -186,11 +188,17 @@ class Universe {
         }
 
         void draw() {
+            /*
             for (auto& obj : tiles) {
                 if(auto ptr = dynamic_cast<Object*>(&*obj))
                     if(ptr->isVisible())
                         ptr->draw(window);
             }
+            */
+            mymap.draw(window);
+
+            if (!(ticks % 20)) Bunny.nextFrame();
+            Bunny.draw(window);
             
             if (now == PAUSE) {
                 for (auto& obj : pausemenu) {
@@ -199,8 +207,7 @@ class Universe {
                     }
                 }
             }
-            if (!(ticks % 20)) Bunny.nextFrame();
-            Bunny.draw(window);
+            
         }
 
 };

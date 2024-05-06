@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+//#include <iostream>
 
 class Character {
 
@@ -25,17 +25,15 @@ class Character {
 		Character() {}
 		~Character() {}
 		void initAnimation(){
-			posx = 500, posy = 500, velocity = 10;
+			posx = 96, posy = 90, velocity = 16;
 			try {
-
-				//down.setPosition(100,100);
 				sf::Image movement;
 				sf::Image part;
 				part.create(16, 16);
 				
 				void* filebuffer = nullptr;
 				long filesize = 0;
-				if(!getDataFromImage("tiles\\movement.png", filebuffer, filesize)) throw std::runtime_error("Can't open movement.png file.\n");
+				if(!getDataFromImage("tiles\\movement.png", filebuffer, filesize)) throw std::runtime_error("Can't open \"movement.png\" file.\n");
 				movement.loadFromMemory(filebuffer, filesize);
 				free(filebuffer);
 
@@ -82,8 +80,6 @@ class Character {
 		}
 
 		void nextFrame() {
-			//if down
-			std::cout << "nextFrame" << '\n';
 			switch (direction) {
 				case DOWN:
 					down.nextFrame();
