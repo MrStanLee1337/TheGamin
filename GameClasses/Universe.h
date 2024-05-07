@@ -70,9 +70,10 @@ class Universe {
 
         void initpause() {
             try {
-                pausemenu.push_back(std::make_unique<Object>("tiles\\play.png", WIDTH / 2 - 110, HEIGHT / 2, "play"));
-                pausemenu.push_back(std::make_unique<Object>("tiles\\exit.png", WIDTH / 2 - 110, HEIGHT / 3 * 2, "exit"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\play.png", WIDTH / 2 - 110, HEIGHT / 6 * 3, "play"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\exit.png", WIDTH / 2 - 110, HEIGHT / 6 * 5, "exit"));
                 pausemenu.push_back(std::make_unique<Object>("tiles\\title.png", WIDTH / 2 - 260, HEIGHT / 12, "title"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\newmap.png", WIDTH / 2 - 110, HEIGHT / 6 * 4, "newmap"));
             }   catch (const std::exception& ex) {
                 std::cerr << ex.what() << '\n';
             }
@@ -120,6 +121,7 @@ class Universe {
                             if (ptr->isClicked(x, y)) {
                                 if (ptr->getType() == "exit") exit();
                                 if (ptr->getType() == "play") game();
+                                if (ptr->getType() == "newmap") mymap.generateMap();
                             }
                         }
                     }
