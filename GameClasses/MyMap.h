@@ -23,9 +23,11 @@ private:
 
 	
 
-	size_t maxcountx, maxcounty;
+	size_t maxcountx, maxcounty;// количество тайлов в ширину и высоту
+	size_t leftStart, upStart;//верхн€€ лева€ вершина построени€ карты
 	std::unordered_map<TileType, sf::Texture> textures;//единичные экземпл€ры текстур дл€ спрайта
-	std::vector<std::pair<int, int>> mp;
+	//std::vector<std::pair<int, int>> mp;
+	std::vector<std::vector<int>> theMap;
 
 	
 	/*
@@ -161,8 +163,96 @@ private:
 		s.setRotation(angle * 90);
 	}
 	
+	void genMap() {
+
+		theMap.resize(maxcounty);
+		for (int i = 0; i < maxcounty; i++) theMap[i].resize(maxcountx, 0);
+		
+		int oXstart  =  ( rand() % (maxcountx / 3) ) + maxcountx / 3;// начало оси о’ находитс€ во 2 трети 
+		int oYstart =  ( rand() % (maxcounty / 3) ) + maxcounty / 3;//тоже самое дл€ oY
+
+		
+		int mark = 1;
+		int y, x;
+		x = oXstart;
+		y = 0;
+
+		theMap[y][x++] = mark;//избавл€емс€ от некрасивых мысов из одного тайла
+		while (true) {// 1 четверть
+			theMap[y][x] = mark;
+			if (y == oYstart && x == maxcountx - 1) break;
+			if (y == oYstart) ++x;
+			else if (x == maxcountx - 1) ++y;
+			else {
+				int f = rand() % 2;
+				if (f) ++x;
+				else ++y;
+			}
+		}
+		++y;
+		theMap[y++][x] = mark;
+		
+		while (true) {//идем по часовой. 4 четверть
+			theMap[y][x] = mark;
+			if (y == maxcounty - 1 && x == oXstart) break;
+			if (y == maxcounty - 1) --x;
+			else if (x == oXstart) ++y;
+			else {
+				int f = rand() % 2;
+				if (f) --x;
+				else ++y;
+			}
+		}
+
+		--x;
+		theMap[y][x--] = mark;
+
+		while (true) {// 3 четверть
+			theMap[y][x] = mark;
+			if (y == oYstart && x == 0) break;
+			if (y == oYstart) --x;
+			else if (x == 0) --y;
+			else {
+				int f = rand() % 2;
+				if (f) --x;
+				else --y;
+			}
+		}
+		
+		--y;
+		theMap[y--][x] = mark;
+
+		while (true) {//2 четверть
+			theMap[y][x] = mark;
+			if (y == 1 && x == oXstart - 1) break;
+			if (y == 1) ++x;
+			else if (x == oXstart - 1) --y;
+			else {
+				int f = rand() % 2;
+				if (f) ++x;
+				else --y;
+			}
+		}
+		for (auto x : theMap) {
+			for (auto y : x) {
+				std::cout << y;
+			}
+			std::cout << '\n';
+		}
+
+	}
 	void defMap() {
+		for (int j = 0; j < maxcounty; j++) {
+			for (int i = 0; i < maxcountx; i++) {
+				sf::Sprite sprite;
+				sprite.setPosition(leftStart + 16 * i, upStart + 16 * j);
+				if(theMap[j][i] == 1) sprite.setTexture(textures[FULL]);
+				sprites.push_back(sprite);
+			}
+		}
+	}
 		/*
+	void genMap(){
 		for (int j = 0; j < maxcounty; j++) {
 			for (int i = 0; i < maxcountx; i++) {
 				sf::Sprite sprite;
@@ -195,6 +285,8 @@ private:
 			}
 		}
 		*/
+
+		/*
 		int destx = 100;
 		int desty = 100;
 		int predl = -1, predr = -1;
@@ -208,6 +300,7 @@ private:
 				sprites.push_back(sprite);
 			}
 		}
+		*/
 		/*
 		predl = 1e10;
 		predr = 0;
@@ -237,7 +330,8 @@ private:
 			sprites.push_back(sprite);
 		}
 		*/
-	}
+	
+	/*
 	void genMap() {
 		mp.resize(maxcounty / 2);// идЄм по вертикали 
 		int maxdiff = 4;
@@ -261,7 +355,7 @@ private:
 			predr = r;
 		}
 	}
-
+	*/
 	
 
 	void DRY(sf::Image& im, TileType type, sf::IntRect rect, int sizex = 16, int sizey = 16) {// чтобы не повтор€тьс€ в инициализации тайлов
@@ -302,7 +396,8 @@ private:
 	}
 
 	void clear() {
-		mp.clear();
+		theMap.clear();
+		//for (int i = 0; i < maxcounty; i++) theMap[i].clear();
 		sprites.erase(sprites.begin() + 1, sprites.end());
 	}
 
@@ -318,10 +413,16 @@ private:
 			}
 		}
 
-		void generateMap(int maxx = 48, int maxy = 30) {
+		void generateMap(int maxx = 48, int maxy = 30, int leftPos = 100, int upPos = 100) {
 			maxcountx = maxx;
 			maxcounty = maxy;
+			leftStart = leftPos;
+			upStart = upPos;
+			
 			clear();
+
+			
+
 			genMap();
 			defMap();
 		}
