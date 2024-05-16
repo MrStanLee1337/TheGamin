@@ -21,22 +21,22 @@ private:
 		FULLDIAG
 	};
 
-	
+
 
 	size_t maxcountx, maxcounty;// количество тайлов в ширину и высоту
 	size_t leftStart, upStart;//верхняя левая вершина построения карты
+	int oXstart, oYstart;// локальный центр острова
 	std::unordered_map<TileType, sf::Texture> textures;//единичные экземпляры текстур для спрайта
 	//std::vector<std::pair<int, int>> mp;
 	std::vector<std::vector<int>> theMap;
 
-	
+
 	/*
-	int dx[4] = { 1, 0, -1, 0 };
-	int dy[4] = { 0, 1, 0, -1 };
+	
 	int diagx[4] = { 1, 1, -1, -1 };
 	int diagy[4] = { 1, -1, 1, -1 };
-	
-	
+
+
 	std::pair<int,int> func(int k, int x, int y) {
 		std::cout << x << ' ' << y << '\n';
 		if (k == 0) {// look up
@@ -61,7 +61,7 @@ private:
 				used[y][x + 1] = true;
 				return { -1, 0 };
 			}
-			
+
 		}
 	}
 	*/
@@ -69,23 +69,6 @@ private:
 	bool psb(int p) {
 		return rand() % 100 < p;
 	}
-	/*
-	int setPoint(int x, int y) {
-		int neighbor[4];
-		neighbor[0] = intmap[y][x - 1].first;
-		neighbor[1] = intmap[y][x + 1].first;
-		neighbor[2] = intmap[y - 1][x].first;
-		neighbor[3] = intmap[y + 1][x].first;
-		std::sort(neighbor, neighbor + 4);
-		
-		if (neighbor[0] > 0) return 1;//вокруг все занято возвращаем full
-		if (neighbor[1] > 0) return 1;
-		if (neighbor[2] == 1 && neighbor[3] == 1) return 1;
-		if (neighbor[2] == 1 && neighbor[3] == 2) return psb(50) ? 2 : 4;
-		if (neighbor[2] == 2 && neighbor[3] == 2) return 3;
-		if (neighbor[3] == 1) return psb(90) ? 1 : 2;
-		return 0;
-	}*/
 
 	/*
 	void randMap() {
@@ -122,7 +105,7 @@ private:
 		/*
 		while (!q.empty()) {
 			auto now = q.front();
-			
+
 			q.pop();
 			for (int i = 0; i < 4; i++) {
 				int mx = now.first + dx[i];
@@ -139,7 +122,7 @@ private:
 							if (dx[i] == 0) intmap[my][mx].second = dy[i] > 0 ? 2 : 0;
 							if (dy[i] == 0) intmap[my][mx].second = dx[i] > 0 ? 1 : 3;
 							q.push(std::make_pair(mx,my));
-							
+
 						}
 					}
 					else if (intmap[now.second][now.first].first == 2) {
@@ -149,34 +132,30 @@ private:
 					}
 				}
 			}
-			
+
 		}
-		
+
 		//neighbor count
 
 	}
 	*/
-	
+
 	void rotate(sf::Sprite& s, int angle) {
 		s.setOrigin(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
 		s.move(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
 		s.setRotation(angle * 90);
 	}
-	
-	void genMap() {
 
-		theMap.resize(maxcounty);
-		for (int i = 0; i < maxcounty; i++) theMap[i].resize(maxcountx, 0);
-		
-		int oXstart  =  ( rand() % (maxcountx / 3) ) + maxcountx / 3;// начало оси оХ находится во 2 трети 
-		int oYstart =  ( rand() % (maxcounty / 3) ) + maxcounty / 3;//тоже самое для oY
-
+	void initStartPoint() {
+		oXstart = (rand() % (maxcountx / 3)) + maxcountx / 3;// начало оси оХ находится во 2 трети 
+		oYstart = (rand() % (maxcounty / 3)) + maxcounty / 3;//тоже самое для oY]
+	}
+	void genPerimeter() {// генерируем  периметр помощью 4-х кривых на каждой из четвертей координатной плоскости 
 		
 		int mark = 1;
 		int y, x;
 		x = oXstart;
 		y = 0;
-
 		theMap[y][x++] = mark;//избавляемся от некрасивых мысов из одного тайла
 		while (true) {// 1 четверть
 			theMap[y][x] = mark;
@@ -191,7 +170,7 @@ private:
 		}
 		++y;
 		theMap[y++][x] = mark;
-		
+
 		while (true) {//идем по часовой. 4 четверть
 			theMap[y][x] = mark;
 			if (y == maxcounty - 1 && x == oXstart) break;
@@ -218,14 +197,14 @@ private:
 				else --y;
 			}
 		}
-		
+
 		--y;
 		theMap[y--][x] = mark;
 
 		while (true) {//2 четверть
 			theMap[y][x] = mark;
-			if (y == 1 && x == oXstart - 1) break;
-			if (y == 1) ++x;
+			if (y == 0 && x == oXstart - 1) break;
+			if (y == 0) ++x;
 			else if (x == oXstart - 1) --y;
 			else {
 				int f = rand() % 2;
@@ -233,6 +212,38 @@ private:
 				else --y;
 			}
 		}
+	}
+
+	void genArea() {// BFS realization for filling the Area of island
+		int dx[4] = { 1, 0, -1, 0 };
+		int dy[4] = { 0, 1, 0, -1 };
+		std::queue<std::pair<int, int>> q;
+		q.push(std::make_pair(oXstart, oYstart));
+		//theMap[q.front().second][q.front().first] = 2;
+		int mark = 2;
+		while (!q.empty()) {
+			auto now = q.front();
+			q.pop();
+			//std::cout << now.first << ' ' << now.second << '\n';
+			for (int i = 0; i < std::size(dx); i++) {
+				int newx = now.first + dx[i];
+				int newy = now.second + dy[i];
+				if (theMap[newy][newx] == 0) {
+					theMap[newy][newx] = mark;
+					q.push(std::make_pair(newx, newy));
+				}
+			}
+			
+		}
+	}
+
+	void genMap() {
+		theMap.resize(maxcounty);
+		for (int i = 0; i < maxcounty; i++) theMap[i].resize(maxcountx, 0);
+		initStartPoint();
+		genPerimeter();
+		genArea();
+		//theMap[oYstart][oXstart] = 2;
 		for (auto x : theMap) {
 			for (auto y : x) {
 				std::cout << y;
@@ -246,7 +257,8 @@ private:
 			for (int i = 0; i < maxcountx; i++) {
 				sf::Sprite sprite;
 				sprite.setPosition(leftStart + 16 * i, upStart + 16 * j);
-				if(theMap[j][i] == 1) sprite.setTexture(textures[FULL]);
+				if (theMap[j][i] == 2) sprite.setTexture(textures[FULL]);
+				else if (theMap[j][i] == 1) sprite.setTexture(textures[EDGE]);
 				sprites.push_back(sprite);
 			}
 		}
