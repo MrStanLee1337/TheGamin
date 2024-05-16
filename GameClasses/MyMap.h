@@ -22,7 +22,7 @@ private:
 	};
 
 
-
+	size_t tileW = 16, tileH = 16;
 	size_t maxcountx, maxcounty;// количество тайлов в ширину и высоту
 	size_t leftStart, upStart;//верхняя левая вершина построения карты
 	int oXstart, oYstart;// локальный центр острова
@@ -140,11 +140,7 @@ private:
 	}
 	*/
 
-	void rotate(sf::Sprite& s, int angle) {
-		s.setOrigin(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
-		s.move(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
-		s.setRotation(angle * 90);
-	}
+	
 
 	void initStartPoint() {
 		oXstart = (rand() % (maxcountx / 3)) + maxcountx / 3;// начало оси оХ находится во 2 трети 
@@ -252,13 +248,86 @@ private:
 		}
 
 	}
+
+	void rotateTile(sf::Sprite& s, int k) {// rotate sprite k times
+		//s.setOrigin(s.getLocalBounds().width, s.getLocalBounds().height);
+		//s.move(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
+		k %= 4;
+		if (k == 1) {
+			s.move(tileW, 0);
+			s.setRotation(90);
+		}
+		else if (k == 2) {
+			s.move(tileW, tileH);
+			s.setRotation(180);
+		}
+		else if (k == 3) {
+			s.move(0, tileH);
+			s.setRotation(270);
+		}
+	}
+
+	void typeTheTile(sf::Sprite& sprite, int x, int y) {// определить тип плитки
+		int neighbor = 0;// количество соседей у тайла
+		int dx[8] = { 1, 0, -1, 0,  1, 1, -1, -1 };
+		int dy[8] = { 0, 1, 0, -1 ,-1, 1,  1, -1 };
+		for (int i = 0; i < std::size(dx); i++) {
+			if (y + dy[i] < maxcounty && x + dx[i] < maxcountx && x + dx[i] >= 0 && y + dy[i] >= 0)
+				if (theMap[y + dy[i]][x + dx[i]] != 0) ++neighbor;
+		}
+		TileType TT;
+		if (neighbor == 7) {
+			TT = FULLONE;
+			if (x + 1 < maxcountx && y - 1 >= 0 && theMap[y - 1][x + 1] == 0) rotateTile(sprite, 2);
+			else if (x + 1 == maxcountx || y + 1 == maxcounty || theMap[y + 1][x + 1] == 0) rotateTile(sprite, 3);
+			else if (x - 1 >= 0 && y - 1 >= 0 && theMap[y - 1][x - 1] == 0) rotateTile(sprite, 1);
+		}
+		else if (neighbor == 6) {
+			TT = EDGE;
+			if (x + 1 == maxcountx || theMap[y][x + 1] == 0) rotateTile(sprite, 1);
+			else if (x - 1 == -1 || theMap[y][x - 1] == 0) rotateTile(sprite, 3);
+			else if (y + 1 == maxcounty || theMap[y + 1][x] == 0) rotateTile(sprite, 2);
+		}
+		else if (neighbor == 5) {
+			int dx[4] = { 1, -1,  0, 0 };
+			int dy[4] = { 0,  0, -1, 1 };
+			int n = 0;
+			for (int i = 0; i < std::size(dx); i++) {
+				if (y + dy[i] < maxcounty && x + dx[i] < maxcountx && x + dx[i] >= 0 && y + dy[i] >= 0)
+					if (theMap[y + dy[i]][x + dx[i]] != 0) ++n;
+			}
+			if (n == 3) {
+				TT = EDGE;
+				if (x + 1 == maxcountx || theMap[y][x + 1] == 0) rotateTile(sprite, 1);
+				else if (x - 1 == -1 || theMap[y][x - 1] == 0) rotateTile(sprite, 3);
+				else if (y + 1 == maxcounty || theMap[y + 1][x] == 0) rotateTile(sprite, 2);
+			} else {
+				TT = CORNER;
+				if (x + 1 < maxcountx && y - 1 != -1 && theMap[y - 1][x + 1] == 2) rotateTile(sprite, 2);
+				else if (x + 1 < maxcountx && y + 1 < maxcounty && theMap[y + 1][x + 1] == 2) rotateTile(sprite, 3);
+				else if (x - 1 != -1 && y - 1 != -1 && theMap[y - 1][x - 1] == 2) rotateTile(sprite, 1);
+			}
+		}
+		else if (neighbor == 4 || neighbor == 3) {
+			TT = CORNER;
+			if (x + 1 < maxcountx && y - 1 != -1 && theMap[y - 1][x + 1] == 2) rotateTile(sprite, 2);
+			else if (x + 1 < maxcountx && y + 1 < maxcounty && theMap[y + 1][x + 1] == 2) rotateTile(sprite, 3);
+			else if (x - 1 != -1 && y - 1 != -1 && theMap[y - 1][x - 1] == 2) rotateTile(sprite, 1);
+		}
+		else return;
+		sprite.setTexture(textures[TT]);
+	}
+
 	void defMap() {
 		for (int j = 0; j < maxcounty; j++) {
 			for (int i = 0; i < maxcountx; i++) {
 				sf::Sprite sprite;
 				sprite.setPosition(leftStart + 16 * i, upStart + 16 * j);
 				if (theMap[j][i] == 2) sprite.setTexture(textures[FULL]);
-				else if (theMap[j][i] == 1) sprite.setTexture(textures[EDGE]);
+				else if (theMap[j][i] == 1) {
+					typeTheTile(sprite, i ,j);
+					//sprite.setTexture(textures[EDGE]);
+				}
 				sprites.push_back(sprite);
 			}
 		}
