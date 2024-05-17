@@ -119,6 +119,7 @@ class Universe {
             leftStart = mymap.getStartPoint().first;
             upStart = mymap.getStartPoint().second;
         }
+
         void pendingMouse() {
             if (event.type == sf::Event::MouseButtonPressed) {
                 

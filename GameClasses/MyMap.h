@@ -9,13 +9,16 @@ class MyMap {
 private:
 	std::vector<sf::Sprite> sprites;// спрайты которые мы будем отрисовывать, в том числе и повтор€ющиес€
 	std::vector<std::unique_ptr<Object>> objects;//объекты взаимодействи€ и анимации
+	//sprites хранит декоративные объекты с которыми нельз€ взаимодействовать (плитки,цветочки, камешки)
+	//objects хранит объекты с которыми можно взаимодейстовать (дерево дл€ сбора плодов, лодка)
+
 	enum TileType {//названи€ типа текстур
 		BACKGROUND,
 		FULL,
 		EDGE,
 		CORNER,
 		FULLONE,
-		BUSH,
+		//BUSH,
 		BUSHNAKED,
 		MUSHREDTWO,
 		MUSHREDONE,
@@ -270,9 +273,8 @@ private:
 		filesize = 0;
 		if (!getDataFromImage("tiles\\decoration.png", filebuffer, filesize)) throw std::runtime_error("Can't open decoration.png file.");
 		image.loadFromMemory(filebuffer, filesize);
-
-
-		DRY(image, BUSH, sf::IntRect(0, 32, 16, 48));
+		free(filebuffer);
+		//DRY(image, BUSH, sf::IntRect(0, 32, 16, 48));
 		DRY(image, BUSHNAKED, sf::IntRect(16, 32, 32, 48));
 		DRY(image, MUSHREDTWO, sf::IntRect(32,32, 48, 48));
 		DRY(image, MUSHREDONE, sf::IntRect(48, 32, 64, 48));
@@ -289,19 +291,7 @@ private:
 		sprites.erase(sprites.begin() + 1, sprites.end());
 	}
 
-	void addBoat() {// добавл€ем лодку у берега в случайное место по оси о’
-		int j = maxcounty - 2;
-		int x, y;
-		int left = 0; int right = maxcountx - 1;
-		while (theMap[j][left++] != 1);
-		while (theMap[j][right--] != 1);
-		int i = rand() % (right - left + 1) + left;
-		theMap[j][i] = 7;//значение лодки
-		x = leftStart + tileW * i;
-		y = upStart + tileH * j;
-
-		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
-	}
+	
 
 	void addSprite(TileType tt, int x, int y) {
 		sf::Sprite sprite;
@@ -310,7 +300,7 @@ private:
 		sprites.push_back(sprite);
 	}
 
-	//closeR если ненулевое значение то оно определ€ет радиус рассто€ние между соседними объектами
+	//заполн€ем случайным образом
 	void addSprites(TileType tt, int mark, int closeR = 0, int k = 1) {//тип, маркировка, радиус, кол-во
 		int times = 20;// на случай ошибки
 		if (!closeR) {
@@ -338,21 +328,75 @@ private:
 					xx = std::max(xx, 0), yy = std::max(yy, 0);
 				}
 				if (!times) return;
+				theMap[yy][xx] = mark;
 				addSprite(tt, leftStart + tileW * xx, upStart + tileH * yy);
 			}
 		}
 	}
+
 	void addDecor() {
-		addSprites(BUSH, 4, 5, 3);
-		addSprites(MUSHREDTWO, 5, 5, 3);
-		addSprites(MUSHREDONE, 6, 4, 2);
-		addSprites(LEAFONE, 7, 0, 10);
-		addSprites(LEAFTWO, 8, 0, 10);
+		int mark = 3;
+		//addSprites(BUSH, mark, 5, 3);
+		addSprites(MUSHREDTWO, mark, 5, 3);
+		addSprites(MUSHREDONE, mark, 4, 2);
+		addSprites(MUSHVIOLONE, mark, 4, 4);
+		addSprites(MUSHVIOLTWO, mark, 4, 4);
+		addSprites(LEAFONE, mark, 0, 7);
+		addSprites(LEAFTWO, mark, 0, 6);
 	}
 
-	void addDecoration() {
+	void addBoat() {// добавл€ем лодку у берега в случайное место по оси о’
+		int j = maxcounty - 2;
+		int x, y;
+		int left = 0; int right = maxcountx - 1;
+		while (theMap[j][left++] != 1);
+		while (theMap[j][right--] != 1);
+		int i = rand() % (right - left + 1) + left;
+		theMap[j][i] = 7;//значение лодки
+		x = leftStart + tileW * i;
+		y = upStart + tileH * j;
+
+		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
+	}
+
+	void addTrees() {
+		int mark = 9;
+
+		void* filebuffer = nullptr;
+		long filesize = 0;
+		sf::Image image;
+		sf::Image tree;
+		tree.create(32, 32);
+		if (!getDataFromImage("tiles\\decoration.png", filebuffer, filesize)) throw std::runtime_error("Can't open decoration.png file.");
+		image.loadFromMemory(filebuffer, filesize);
+		tree.copy(image, 0, 0, sf::IntRect(0, 0, 32, 32));
+		int count = 2;
+		while (count--) {
+			int x = 0, y = 0;
+			while (theMap[y][x] != 2 && theMap[y + 1][x] != 2 && theMap[y][x + 1] != 2 && theMap[y + 1][x + 1] != 2) x = rand() % (maxcountx - 1), y = rand() % (maxcounty - 1);
+			theMap[y][x] = mark, theMap[y + 1][x] = mark, theMap[y][x + 1] = mark, theMap[y + 1][x + 1] = mark;
+			objects.push_back(std::make_unique<Object>(tree, leftStart + tileW * x, upStart + tileH * y, "boat"));
+		}
+		sf::Image bush;
+		bush.create(16, 16);
+		bush.copy(image, 0, 0, sf::IntRect(0, 32, 16, 48));
+		count = 3;
+		while (count--) {
+			int x = 0; int y = 0;
+			while (theMap[y][x] != 2) x = rand() % maxcountx, y = rand() % maxcounty;
+			theMap[y][x] = mark;
+			objects.push_back(std::make_unique<Object>(bush, leftStart + tileW * x, upStart + tileH * y, "bush"));
+		}
+	}
+
+	void addObjects() {
 		addBoat();
-		addDecor();
+		addTrees();
+	}
+	
+	void addDecoration() {
+		addObjects();//заполн€ем vector objects
+		addDecor();//заполн€ем vector sprites
 	}
 
 	

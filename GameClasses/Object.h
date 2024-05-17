@@ -48,6 +48,15 @@ class Object {
         Object(const char* filename, const char* type = nullptr) throw() : type(type) {
             addPicture(filename); 
         }
+
+        Object(sf::Image image, const char* type = nullptr) : type(type) {
+            addPicture(image);
+        }
+
+        Object(sf::Image image, int x, int y, const char* type = nullptr) : type(type){
+            addPicture(image);
+            sprite.setPosition(float(x), float(y));
+        }
         Object(const char* filename, int x, int y, const char* type = nullptr) throw() : type(type) {
             addPicture(filename);
             sprite.setPosition((float)x, (float)y);
