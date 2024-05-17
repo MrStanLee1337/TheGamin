@@ -23,6 +23,8 @@ class Universe {
         sf::Cursor cursor;
         sf::Event event;
 
+        std::vector<std::vector<int>> theMap;
+        int leftStart, upStart;
         DWORD ticks = 0;// тики для анимации
 
         Character Bunny;
@@ -57,6 +59,7 @@ class Universe {
         */
         void initcursor() {
             try {
+                //Object texture("tiles\\cursor.png");
                 Object texture("tiles\\cursor.png");
                 sf::Image image = texture.getTexture().copyToImage();
                 int width = image.getSize().x; int height = image.getSize().y;
@@ -110,6 +113,12 @@ class Universe {
             }
         }
 
+        void genMap() {
+            mymap.generateMap();
+            theMap = mymap.getMap();
+            leftStart = mymap.getStartPoint().first;
+            upStart = mymap.getStartPoint().second;
+        }
         void pendingMouse() {
             if (event.type == sf::Event::MouseButtonPressed) {
                 
@@ -121,7 +130,7 @@ class Universe {
                             if (ptr->isClicked(x, y)) {
                                 if (ptr->getType() == "exit") exit();
                                 if (ptr->getType() == "play") game();
-                                if (ptr->getType() == "newmap") mymap.generateMap();
+                                if (ptr->getType() == "newmap") genMap();
                             }
                         }
                     }
@@ -144,6 +153,7 @@ class Universe {
         void init() {
             Bunny.initAnimation();
             mymap.initTiles();
+            genMap();
             initmusic();
             //inittiles();
             initcursor();

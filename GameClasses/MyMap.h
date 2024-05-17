@@ -8,17 +8,21 @@
 class MyMap {
 private:
 	std::vector<sf::Sprite> sprites;// спрайты которые мы будем отрисовывать, в том числе и повторяющиеся
-
+	std::vector<std::unique_ptr<Object>> objects;//объекты взаимодействия и анимации
 	enum TileType {//названия типа текстур
 		BACKGROUND,
 		FULL,
 		EDGE,
 		CORNER,
 		FULLONE,
-		FULLTWO,
-		FULLTHREE,
-		FULLFOUR,
-		FULLDIAG
+		BUSH,
+		BUSHNAKED,
+		MUSHREDTWO,
+		MUSHREDONE,
+		MUSHVIOLONE,
+		MUSHVIOLTWO,
+		LEAFONE,
+		LEAFTWO
 	};
 
 
@@ -31,114 +35,13 @@ private:
 	std::vector<std::vector<int>> theMap;
 
 
-	/*
 	
-	int diagx[4] = { 1, 1, -1, -1 };
-	int diagy[4] = { 1, -1, 1, -1 };
-
-
-	std::pair<int,int> func(int k, int x, int y) {
-		std::cout << x << ' ' << y << '\n';
-		if (k == 0) {// look up
-			if (intmap[y + 1][x - 1].first == 1) {// down left is full
-				intmap[y][x - 1].first = 2;//left = edge
-				used[y][x - 1] = true;
-				return { y, x - 1 };
-			}
-			else if (intmap[y + 1][x - 1].first == 2) {//down left is edge
-				intmap[y][x - 1].first = 3;//left = corner
-				intmap[y][x - 1].second = 0;
-				used[y][x - 1] = true;
-				return { -1, 0 };// if -1 then !q.push, second value is angle
-			}
-			if (intmap[y + 1][x + 1].first == 1) {//down right is full
-				intmap[y][x + 1].first = 2;
-				used[y][x + 1] = true;
-				return { y, x + 1 };
-			}
-			else if (intmap[y + 1][x + 1].first == 2) {//down right is edge
-				intmap[y][x + 1].first = 3;
-				used[y][x + 1] = true;
-				return { -1, 0 };
-			}
-
-		}
-	}
-	*/
 
 	bool psb(int p) {
 		return rand() % 100 < p;
 	}
 
-	/*
-	void randMap() {
-		intmap.resize(maxcounty);
-		for (int i = 0; i < maxcounty; i++) intmap[i].resize(maxcountx, std::make_pair(0, 0));
-		used.resize(maxcounty);
-		for (int i = 0; i < maxcounty; i++) used[i].resize(maxcountx, false);
-
-		int startx = rand() % maxcountx;
-		int starty = rand() % maxcounty;
-
-		//bfs
-		std::queue<std::pair<int, int>> q;
-		q.push(std::make_pair(startx, starty));
-		intmap[starty][startx].first = 1;
-		used[starty][startx] = true;
-
-		while (!q.empty()) {
-			auto now = q.front();
-			q.pop();
-			for (int i = 0; i < 4; i++) {
-				int mx = now.first + dx[i];
-				int my = now.second + dy[i];
-				if (mx > 0 && mx < maxcountx - 1 && my > 0 && my < maxcounty - 1 && used[my][mx] == false) {
-					used[my][mx] = true;
-					if (auto k = setPoint(mx, my)) {
-						intmap[my][mx].first = k;
-						q.push(std::make_pair(mx,my));
-					}
-
-				}
-			}
-		}
-		/*
-		while (!q.empty()) {
-			auto now = q.front();
-
-			q.pop();
-			for (int i = 0; i < 4; i++) {
-				int mx = now.first + dx[i];
-				int my = now.second + dy[i];
-				if(mx >= 0 && mx < maxcountx && my >=0 && my < maxcounty && used[my][mx] == false) {
-					used[my][mx] = true;
-					if (intmap[now.second][now.first].first == 1 ) {
-						int k = rand()%10;
-						if (k > 2) {
-							intmap[my][mx].first = 1;// FULL
-							q.push(std::make_pair(mx, my));
-						} else {
-							intmap[my][mx].first = 2;//EDGE
-							if (dx[i] == 0) intmap[my][mx].second = dy[i] > 0 ? 2 : 0;
-							if (dy[i] == 0) intmap[my][mx].second = dx[i] > 0 ? 1 : 3;
-							q.push(std::make_pair(mx,my));
-
-						}
-					}
-					else if (intmap[now.second][now.first].first == 2) {
-						int k = intmap[now.second][now.first].second; // смотрим куда повернут спрайт
-						auto d = func(k, mx, my);
-						if (d.first != -1 && d.first < maxcountx && d.second < maxcounty) q.push(d);
-					}
-				}
-			}
-
-		}
-
-		//neighbor count
-
-	}
-	*/
+	
 
 	
 
@@ -215,12 +118,10 @@ private:
 		int dy[4] = { 0, 1, 0, -1 };
 		std::queue<std::pair<int, int>> q;
 		q.push(std::make_pair(oXstart, oYstart));
-		//theMap[q.front().second][q.front().first] = 2;
-		int mark = 2;
+		int mark = 2; // filling mark
 		while (!q.empty()) {
 			auto now = q.front();
 			q.pop();
-			//std::cout << now.first << ' ' << now.second << '\n';
 			for (int i = 0; i < std::size(dx); i++) {
 				int newx = now.first + dx[i];
 				int newy = now.second + dy[i];
@@ -239,19 +140,13 @@ private:
 		initStartPoint();
 		genPerimeter();
 		genArea();
-		//theMap[oYstart][oXstart] = 2;
-		for (auto x : theMap) {
-			for (auto y : x) {
-				std::cout << y;
-			}
-			std::cout << '\n';
-		}
+		
+		
+		
 
 	}
 
 	void rotateTile(sf::Sprite& s, int k) {// rotate sprite k times
-		//s.setOrigin(s.getLocalBounds().width, s.getLocalBounds().height);
-		//s.move(s.getLocalBounds().width / 2.f, s.getLocalBounds().height / 2.f);
 		k %= 4;
 		if (k == 1) {
 			s.move(tileW, 0);
@@ -332,111 +227,7 @@ private:
 			}
 		}
 	}
-		/*
-	void genMap(){
-		for (int j = 0; j < maxcounty; j++) {
-			for (int i = 0; i < maxcountx; i++) {
-				sf::Sprite sprite;
-				sprite.setPosition(8*16 + 16*i, 8*16 + 16*j);
-				switch (0) {
-
-				case 0:
-					continue;
-
-				case 1:
-					sprite.setTexture(textures[FULL]);
-					break;
-
-				case 2:
-					sprite.setTexture(textures[EDGE]);
-					
-					break;
-
-				case 3:
-					sprite.setTexture(textures[CORNER]);
-					break;
-
-				case 4:
-					sprite.setTexture(textures[FULLONE]);
-					break;
-
-				}
-				
-				sprites.push_back(sprite);
-			}
-		}
-		*/
-
-		/*
-		int destx = 100;
-		int desty = 100;
-		int predl = -1, predr = -1;
-		for (int v = 1; v < 2*mp.size() - 1; v++) {
-			auto d = mp[v/2];
-			for (int i = d.first + 1; i < d.second - 1; i++) {// заполняем внутренние спрайты FULL
-				sf::Sprite sprite;
-				
-				sprite.setPosition(destx + 16 * i, desty + 16 * v);
-				sprite.setTexture(textures[FULL]);
-				sprites.push_back(sprite);
-			}
-		}
-		*/
-		/*
-		predl = 1e10;
-		predr = 0;
-		for (int v = 0; v < 2*mp.size(); v++) {
-			auto d = mp[v / 2];
-
-			sf::Sprite sprite;
-			if (d.first < predl) {
-				sprite.setPosition(destx + 16 * d.first, desty + 16 * v);
-				if (v % 2 == 0) sprite.setTexture(textures[CORNER]);
-			}
-			else {
-				sprite.setPosition(destx + 16 * d.first, desty + 16 * v);
-				if (v % 2 == 1) {
-					sprite.setTexture(textures[FULLONE]);
-					rotate(sprite, 1);
-				}
-			}
-			
-			//sprite.setPosition(destx + 16 * i, desty + 16 * v);
-			//sprite.setTexture(textures[EDGE]);
-			//if (v == 2 * mp.size() - 1) rotate(sprite, 2);
-			//else if (i == d.second - 1) rotate(sprite, 1);
-			//else if (i == d.first) rotate(sprite, 3);
-			predl = d.first;
-			predr = d.second;
-			sprites.push_back(sprite);
-		}
-		*/
-	
-	/*
-	void genMap() {
-		mp.resize(maxcounty / 2);// идём по вертикали 
-		int maxdiff = 4;
-		int predl = maxcountx / 4 * 1;
-		int predr = maxcountx / 4 * 3;
-		for (int v = 0; v < mp.size(); v++) {
-			
-			int l, r;
-			if (v < mp.size() / 2) {
-				l = std::max((predl - rand() % maxdiff), 0);
-				r = std::min((predr + rand() % maxdiff), (int)maxcountx - 1);
-			}
-			else {
-				l = std::min((predl + rand() % maxdiff), (int)maxcountx - 1);
-				r = std::max((predr - rand() % maxdiff), 0);
-			}
-
-			mp[v] = std::make_pair(l, r);
-			
-			predl = l;
-			predr = r;
-		}
-	}
-	*/
+		
 	
 
 	void DRY(sf::Image& im, TileType type, sf::IntRect rect, int sizex = 16, int sizey = 16) {// чтобы не повторяться в инициализации тайлов
@@ -469,26 +260,110 @@ private:
 		DRY(image, EDGE, sf::IntRect(16, 0, 32, 16));
 		DRY(image, CORNER, sf::IntRect(32, 0, 48, 16));
 		DRY(image, FULLONE, sf::IntRect(0, 16, 16, 32));
-		DRY(image, FULLTWO, sf::IntRect(16, 16, 32, 32));
-		DRY(image, FULLTHREE, sf::IntRect(32, 16, 48, 32));
-		DRY(image, FULLFOUR, sf::IntRect(48, 16, 64, 32));
-		DRY(image, FULLDIAG, sf::IntRect(64, 16, 80, 32));
+		//DRY(image, FULLTWO, sf::IntRect(16, 16, 32, 32));
+		//DRY(image, FULLTHREE, sf::IntRect(32, 16, 48, 32));
+		//DRY(image, FULLFOUR, sf::IntRect(48, 16, 64, 32));
+		//DRY(image, FULLDIAG, sf::IntRect(64, 16, 80, 32));
 
+
+		filebuffer = nullptr;
+		filesize = 0;
+		if (!getDataFromImage("tiles\\decoration.png", filebuffer, filesize)) throw std::runtime_error("Can't open decoration.png file.");
+		image.loadFromMemory(filebuffer, filesize);
+
+
+		DRY(image, BUSH, sf::IntRect(0, 32, 16, 48));
+		DRY(image, BUSHNAKED, sf::IntRect(16, 32, 32, 48));
+		DRY(image, MUSHREDTWO, sf::IntRect(32,32, 48, 48));
+		DRY(image, MUSHREDONE, sf::IntRect(48, 32, 64, 48));
+		DRY(image, MUSHVIOLONE, sf::IntRect(64, 32, 80, 48));
+		DRY(image, MUSHVIOLTWO, sf::IntRect(80, 32, 96, 48));
+		DRY(image, LEAFONE, sf::IntRect(96, 32, 112, 48));
+		DRY(image, LEAFTWO, sf::IntRect(112, 32, 128, 48));
+		
 	}
 
-	void clear() {
+	void clear() {// очищаем карту и спрайты(кроме background)
+		objects.clear();
 		theMap.clear();
-		//for (int i = 0; i < maxcounty; i++) theMap[i].clear();
 		sprites.erase(sprites.begin() + 1, sprites.end());
 	}
 
+	void addBoat() {// добавляем лодку у берега в случайное место по оси оХ
+		int j = maxcounty - 2;
+		int x, y;
+		int left = 0; int right = maxcountx - 1;
+		while (theMap[j][left++] != 1);
+		while (theMap[j][right--] != 1);
+		int i = rand() % (right - left + 1) + left;
+		theMap[j][i] = 7;//значение лодки
+		x = leftStart + tileW * i;
+		y = upStart + tileH * j;
+
+		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
+	}
+
+	void addSprite(TileType tt, int x, int y) {
+		sf::Sprite sprite;
+		sprite.setPosition(x, y);
+		sprite.setTexture(textures[tt]);
+		sprites.push_back(sprite);
+	}
+
+	//closeR если ненулевое значение то оно определяет радиус расстояние между соседними объектами
+	void addSprites(TileType tt, int mark, int closeR = 0, int k = 1) {//тип, маркировка, радиус, кол-во
+		int times = 20;// на случай ошибки
+		if (!closeR) {
+			for (int c = 0; c < k; c++) {
+				int x = 0, y = 0;
+				while (theMap[y][x] != 2 && --times) x = rand() % maxcountx, y = rand() % maxcounty;
+				if (!times) return;
+				theMap[y][x] = mark;//bush
+				addSprite(tt, leftStart + tileW * x, upStart + tileH * y);
+			}
+		}
+		else {
+			int x = 0, y = 0;
+			while (theMap[y][x] != 2) x = rand() % maxcountx, y = rand() % maxcounty;
+			theMap[y][x] = mark;
+			addSprite(tt, leftStart + tileW * x, upStart + tileH * y);
+			int newx = x - closeR, newy = y - closeR;
+			newx = newx < 0 ? 0 : newx > maxcountx - 1 ? maxcountx - 1 : newx;//смотрим ограничения
+			newy = newy < 0 ? 0 : newy > maxcounty - 1 ? maxcounty - 1 : newy;
+			for (int c = 0; c < k - 1; c++) {
+				int yy = 0, xx = 0;
+				while (theMap[yy][xx] != 2 && --times) {
+					xx = newx + rand() % (2 * closeR), yy = newy + rand() % (2 * closeR);
+					xx = std::min(xx, (int)maxcountx - 1), yy = std::min(yy, (int)maxcounty - 1);
+					xx = std::max(xx, 0), yy = std::max(yy, 0);
+				}
+				if (!times) return;
+				addSprite(tt, leftStart + tileW * xx, upStart + tileH * yy);
+			}
+		}
+	}
+	void addDecor() {
+		addSprites(BUSH, 4, 5, 3);
+		addSprites(MUSHREDTWO, 5, 5, 3);
+		addSprites(MUSHREDONE, 6, 4, 2);
+		addSprites(LEAFONE, 7, 0, 10);
+		addSprites(LEAFTWO, 8, 0, 10);
+	}
+
+	void addDecoration() {
+		addBoat();
+		addDecor();
+	}
+
+	
 	public:
 		MyMap() {}
+		~MyMap() {}
 
 		void initTiles() {
 			try {
 				initTextures();
-				generateMap();
+				//generateMap();
 			} catch (const std::exception& ex) {
 				std::cout << ex.what() << '\n';
 			}
@@ -502,14 +377,37 @@ private:
 			
 			clear();
 
-			
-
 			genMap();
 			defMap();
+			addDecoration();
+
+			printMap();
+
 		}
 		
+		std::vector<std::vector<int>> getMap() {
+			return theMap;
+		}
+
+		std::pair<size_t, size_t> getStartPoint() {
+			return { leftStart, upStart };
+		}
+
 		void draw(sf::RenderWindow& window) {
 			for (auto& obj : sprites) window.draw(obj);
+			for (auto& obj : objects) {
+				if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+					ptr->draw(window);
+				}
+			}
 		}
-		~MyMap() {}
+		void printMap() {
+			for (auto x : theMap) {
+				for (auto y : x) {
+					std::cout << y;
+				}
+				std::cout << '\n';
+			}
+		}
+
 };
