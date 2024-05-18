@@ -13,7 +13,6 @@
 
 class Universe {
 	private:
-
         int WIDTH, HEIGHT;
 		gm::GameMusic sounds;
         //std::vector<std::unique_ptr<Object>> tiles;
@@ -30,6 +29,8 @@ class Universe {
         Character Bunny;
         MyMap mymap;
 
+        bool keyReleased = true;// одно нажатие - одно действие
+
         enum GameState {
             PAUSE,
             GAME,
@@ -45,18 +46,9 @@ class Universe {
             catch (const std::exception& ex) {
                 std::cerr << ex.what() << '\n';
             }
-            //sounds.playMusic(true);
+            
 		}
-        /*
-        void inittiles(){
-            try {
-                tiles.push_back(std::make_unique<Object>("tiles\\backwater.png"));
-            }
-            catch (const std::exception& ex){
-                std::cerr << ex.what() << '\n';
-            }
-        }
-        */
+       
         void initcursor() {
             try {
                 //Object texture("tiles\\cursor.png");
@@ -77,6 +69,9 @@ class Universe {
                 pausemenu.push_back(std::make_unique<Object>("tiles\\exit.png", WIDTH / 2 - 110, HEIGHT / 6 * 5, "exit"));
                 pausemenu.push_back(std::make_unique<Object>("tiles\\title.png", WIDTH / 2 - 260, HEIGHT / 12, "title"));
                 pausemenu.push_back(std::make_unique<Object>("tiles\\newmap.png", WIDTH / 2 - 110, HEIGHT / 6 * 4, "newmap"));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\author.png", WIDTH - 150, 0.9f * HEIGHT));
+                pausemenu.push_back(std::make_unique<Object>("tiles\\assets.png", WIDTH - 150, 0.8f * HEIGHT));
+                
             }   catch (const std::exception& ex) {
                 std::cerr << ex.what() << '\n';
             }
@@ -99,9 +94,10 @@ class Universe {
 
         void pendingKeyboard() {
             if (event.type == sf::Event::KeyPressed) {
+                
                 if (event.key.code == sf::Keyboard::Escape) switchPause(); 
                 else
-                if (now == GAME) {
+                if (now == GAME && keyReleased) {
                     if (event.key.code == sf::Keyboard::A) Bunny.moveleft(); 
                     else
                     if (event.key.code == sf::Keyboard::D) Bunny.moveright(); 
@@ -109,20 +105,26 @@ class Universe {
                     if (event.key.code == sf::Keyboard::W) Bunny.moveup(); 
                     else
                     if (event.key.code == sf::Keyboard::S) Bunny.movedown();
+
+                    keyReleased = false;
                 }
+               
+            }
+            else if (event.type == sf::Event::KeyReleased) {
+                keyReleased = true;
             }
         }
 
-        void genMap() {
+        void genMap() {//функция генерации карты и получения основной информации о ней
             mymap.generateMap();
             theMap = mymap.getMap();
             leftStart = mymap.getStartPoint().first;
             upStart = mymap.getStartPoint().second;
+            Bunny.setPosition(mymap.getStartPos().first, mymap.getStartPos().second);
         }
 
         void pendingMouse() {
             if (event.type == sf::Event::MouseButtonPressed) {
-                
                 float x = sf::Mouse::getPosition(window).x;
                 float y = sf::Mouse::getPosition(window).y;
                 if (now == PAUSE) {
@@ -140,7 +142,7 @@ class Universe {
         }
 
 	public:
-
+        
         Universe(sf::RenderWindow& window, int WIDTH, int HEIGHT) :window(window), WIDTH(WIDTH), HEIGHT(HEIGHT) {}
 
         void playMusic() {
@@ -162,16 +164,16 @@ class Universe {
         }
 
         void tickrate() {
-            ++(ticks %= 600);//10 секунд
+            ++(ticks %= 600);//10 секунд с фреймрейтом 60
         }
 
         void animation() {
             if (!(ticks % 60)) {
-                int offset = ticks < 200 ? 3 : ticks > 400 ? -3 : 0;
+                int offset = ticks < 200 ? -3 : ticks > 400 ?  3 : 0;
                 if (now == PAUSE) {
                     for (auto& obj : pausemenu) {
                         if (auto ptr = dynamic_cast<Object*>(&*obj)) {
-                            ptr->setPosition(ptr->getPosition().x, ptr->getPosition().y + offset);
+                            ptr->setPosition(ptr->getPosition().x + offset, ptr->getPosition().y + offset);
                         }
                     }
                 }

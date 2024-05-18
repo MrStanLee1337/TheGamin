@@ -12,7 +12,7 @@ class Character {
 		Object right;
 		Object afk;
 		int posx, posy;
-		int velocity;
+		int velocity = 16;
 
 		enum Direction {
 			DOWN,
@@ -21,11 +21,12 @@ class Character {
 			RIGHT,
 			AFK
 		} direction = AFK;
+
 	public:
 		Character() {}
 		~Character() {}
 		void initAnimation(){
-			posx = 96, posy = 90, velocity = 16;
+			//posx = 96, posy = 90, velocity = 16;
 			try {
 				sf::Image movement;
 				sf::Image part;
@@ -59,6 +60,7 @@ class Character {
 			}
 		}
 
+		
 		void moveleft() {
 			direction = LEFT;
 			posx -= velocity;
@@ -77,6 +79,11 @@ class Character {
 		void movedown() {
 			direction = DOWN;
 			posy += velocity;
+		}
+
+		void setPosition(int x, int y) {
+			posx = x;
+			posy = y;
 		}
 
 		void nextFrame() {

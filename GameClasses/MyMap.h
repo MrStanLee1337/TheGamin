@@ -11,7 +11,7 @@ private:
 	std::vector<std::unique_ptr<Object>> objects;//объекты взаимодействия и анимации
 	//sprites хранит декоративные объекты с которыми нельзя взаимодействовать (плитки,цветочки, камешки)
 	//objects хранит объекты с которыми можно взаимодейстовать (дерево для сбора плодов, лодка)
-
+	std::pair<int, int> startPos;//позиция где будет появляться ГГ
 	enum TileType {//названия типа текстур
 		BACKGROUND,
 		FULL,
@@ -293,7 +293,7 @@ private:
 
 	
 
-	void addSprite(TileType tt, int x, int y) {
+	void addSprite(TileType tt, int x, int y) {//заполняем вектор спрайтами
 		sf::Sprite sprite;
 		sprite.setPosition(x, y);
 		sprite.setTexture(textures[tt]);
@@ -308,7 +308,7 @@ private:
 				int x = 0, y = 0;
 				while (theMap[y][x] != 2 && --times) x = rand() % maxcountx, y = rand() % maxcounty;
 				if (!times) return;
-				theMap[y][x] = mark;//bush
+				theMap[y][x] = mark;
 				addSprite(tt, leftStart + tileW * x, upStart + tileH * y);
 			}
 		}
@@ -355,7 +355,7 @@ private:
 		theMap[j][i] = 7;//значение лодки
 		x = leftStart + tileW * i;
 		y = upStart + tileH * j;
-
+		startPos = std::make_pair(x, y);//пусть стартовая позиция будет находиться у лодки
 		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
 	}
 
@@ -413,14 +413,12 @@ private:
 			}
 		}
 
-		void generateMap(int maxx = 48, int maxy = 30, int leftPos = 100, int upPos = 100) {
+		void generateMap(int maxx = 48, int maxy = 30, int leftPos = 100, int upPos = 100) {//кол-во плиток и нач позиция
 			maxcountx = maxx;
 			maxcounty = maxy;
 			leftStart = leftPos;
 			upStart = upPos;
-			
 			clear();
-
 			genMap();
 			defMap();
 			addDecoration();
@@ -436,7 +434,7 @@ private:
 		std::pair<size_t, size_t> getStartPoint() {
 			return { leftStart, upStart };
 		}
-
+		std::pair<int, int> getStartPos() { return startPos; }
 		void draw(sf::RenderWindow& window) {
 			for (auto& obj : sprites) window.draw(obj);
 			for (auto& obj : objects) {
