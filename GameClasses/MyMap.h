@@ -386,23 +386,39 @@ private:
 		void* filebuffer = nullptr;
 		long filesize = 0;
 		sf::Image image;
-		sf::Image tree;
+		sf::Image tree;//дерево с плодом
+		sf::Image nakedTree;//голое дерево
+		sf::Image stump;//пень
 		tree.create(32, 32);
+		nakedTree.create(32, 32);
+		stump.create(32, 32);
+
 		if (!getDataFromImage("tiles\\decoration.png", filebuffer, filesize)) throw std::runtime_error("Can't open decoration.png file.");
 		image.loadFromMemory(filebuffer, filesize);
+
 		tree.copy(image, 0, 0, sf::IntRect(0, 0, 32, 32));
-		int count = 2;
-		while (count--) {
+		nakedTree.copy(image, 0, 0, sf::IntRect(32, 0, 64, 32));
+		stump.copy(image, 0, 0, sf::IntRect(96, 0, 128, 32));
+
+		int countTrees = 2;
+		std::vector<sf::Image> trees = {tree, nakedTree, stump};
+		while (countTrees--) {
 			int x = 0, y = 0;
 			while (theMap[y][x] != 2 && theMap[y + 1][x] != 2 && theMap[y][x + 1] != 2 && theMap[y + 1][x + 1] != 2) x = rand() % (maxcountx - 1), y = rand() % (maxcounty - 1);
 			theMap[y][x] = mark, theMap[y + 1][x] = mark, theMap[y][x + 1] = mark, theMap[y + 1][x + 1] = mark;
-			objects.push_back(std::make_unique<Object>(tree, leftStart + tileW * x, upStart + tileH * y, "boat"));
+
+			//Object obj(tree, leftStart + tileW * x, upStart + tileH * y, "boat");
+			objects.push_back(std::make_unique<Object>(trees, leftStart + tileW * x, upStart + tileH * y, "boat"));
+			//auto& last = objects.back();
+
+			//tree.copy(image, 0, 0, sf::IntRect(32,0,64,32));//голое дерево (следующий фрейм)
+			//(*last).addPicture(nakedTree);
 		}
 		sf::Image bush;
 		bush.create(16, 16);
 		bush.copy(image, 0, 0, sf::IntRect(0, 32, 16, 48));
-		count = 3;
-		while (count--) {
+		int countBushes = 3;
+		while (countBushes--) {
 			int x = 0; int y = 0;
 			while (theMap[y][x] != 2) x = rand() % maxcountx, y = rand() % maxcounty;
 			theMap[y][x] = mark;
@@ -448,6 +464,15 @@ private:
 
 		}
 		
+		void isInteracted(int x, int y) {
+			for (auto& obj : objects) {
+				if (obj->isClicked(x, y)) {
+					obj->nextFrame();
+					//std::cout << "NextFramed\n";
+				}
+			}
+		}
+
 		std::vector<std::vector<int>> getMap() {
 			return theMap;
 		}

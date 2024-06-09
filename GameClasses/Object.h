@@ -38,7 +38,7 @@ class Object {
         bool visibility = true;
         sf::Sprite sprite;
         std::vector<sf::Texture> animation;
-        int frame = 0;
+        size_t frame = 0;
         const char* type = ""; // хранит тип объекта (кнопки, объекта) для определения с чем мы взимодействуем
 
         
@@ -61,6 +61,13 @@ class Object {
             addPicture(filename);
             sprite.setPosition((float)x, (float)y);
         }
+        Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr) {
+            for (auto img : images) {
+                addPicture(img);
+            }
+            sprite.setPosition((float)x, (float)y);
+            frame = 0;
+        }
         
 
         void addPicture(const char* filename) throw() {// download pic to sprite
@@ -71,7 +78,7 @@ class Object {
                 sf::Texture texture;
                 texture.loadFromMemory(filebuffer, filesize);
                 animation.push_back(texture);
-                sprite.setTexture(animation.back());
+                sprite.setTexture(animation.front());
             }
             free(filebuffer);
         }
@@ -80,7 +87,7 @@ class Object {
             sf::Texture texture;
             texture.loadFromImage(image);
             animation.push_back(texture);
-            sprite.setTexture(animation.back());
+            sprite.setTexture(animation.front());
         }
         
 		
@@ -105,6 +112,7 @@ class Object {
         void nextFrame() {
             if (++frame == animation.size()) frame = 0;
             sprite.setTexture(animation[frame]);
+           
         }
 
 

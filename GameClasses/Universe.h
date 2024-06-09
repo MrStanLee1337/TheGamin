@@ -29,7 +29,7 @@ class Universe {
         Character Bunny;
         MyMap mymap;
 
-        std::pair<int, int> tilePos; // место по€вление персонажа относительно тайлов
+        std::pair<int, int> heroTilePos; // место по€вление персонажа относительно тайлов
         int tileW = 16;
         int tileH = 16;
         int BunnyOffset = 10;//сдвиг по вертикали (чтобы не казалось что √√ ходит по самому краю берега)
@@ -98,13 +98,27 @@ class Universe {
 
         void changeBunnyTilePos(int offx, int offy) {
             
-            int x = tilePos.first + offx;
-            int y = tilePos.second + offy;
+            int x = heroTilePos.first + offx;
+            int y = heroTilePos.second + offy;
             if (x < 0 || x >= theMap[0].size()) return;
             if (y < 0 || y >= theMap.size()) return;
             if (theMap[y][x] == 1 || theMap[y][x] == 2 || theMap[y][x] == 3 || theMap[y][x] == 7) {
-                tilePos = std::make_pair(x, y);
+                heroTilePos = std::make_pair(x, y);
                 Bunny.setPosition(leftStart + tileW * x, upStart + tileH * y - BunnyOffset);
+            }
+        }
+
+        void interaction() {
+            int dx[] = { -1,1,0,0 };
+            int dy[] = { 0, 0, -1, 1 };
+            for (int i = 0; i < std::size(dx); i++) {
+                int newx = dx[i] + heroTilePos.first;
+                int newy = dy[i] + heroTilePos.second;
+                if (newx >= 0 && newx < theMap[0].size() && newy >= 0 && newy < theMap.size()) {
+                    newx = leftStart + tileW * newx;
+                    newy = upStart + tileH * newy;
+                    mymap.isInteracted(newx, newy);
+                }
             }
         }
 
@@ -126,6 +140,9 @@ class Universe {
                     } else if (event.key.code == sf::Keyboard::S) {
                         Bunny.moveDown();
                         changeBunnyTilePos(0, 1);
+                    } else if (event.key.code == sf::Keyboard::F) {
+                        interaction();
+
                     }
 
                     keyReleased = false;
@@ -144,9 +161,9 @@ class Universe {
             upStart = mymap.getStartIslandPointPxls().second;
             //Bunny.setPosition(mymap.getStartCharacterPxlsPoint().first, mymap.getStartCharacterPxlsPoint().second);
 
-            tilePos = mymap.getStartCharacterTilePoint();
+            heroTilePos = mymap.getStartCharacterTilePoint();
             int offsety = 10;
-            Bunny.setPosition(tilePos.first * 16 + leftStart, tilePos.second * 16 + upStart - offsety);
+            Bunny.setPosition(heroTilePos.first * 16 + leftStart, heroTilePos.second * 16 + upStart - offsety);
         }
 
         void pendingMouse() {
