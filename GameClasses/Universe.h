@@ -29,6 +29,10 @@ class Universe {
         Character Bunny;
         MyMap mymap;
 
+        std::pair<int, int> tilePos; // место появление персонажа относительно тайлов
+        int tileW = 16;
+        int tileH = 16;
+        int BunnyOffset = 10;//сдвиг по вертикали (чтобы не казалось что ГГ ходит по самому краю берега)
         bool keyReleased = true;// одно нажатие - одно действие
 
         enum GameState {
@@ -92,19 +96,37 @@ class Universe {
             window.close();
         }
 
+        void changeBunnyTilePos(int offx, int offy) {
+            
+            int x = tilePos.first + offx;
+            int y = tilePos.second + offy;
+            if (x < 0 || x >= theMap[0].size()) return;
+            if (y < 0 || y >= theMap.size()) return;
+            if (theMap[y][x] == 1 || theMap[y][x] == 2 || theMap[y][x] == 3 || theMap[y][x] == 7) {
+                tilePos = std::make_pair(x, y);
+                Bunny.setPosition(leftStart + tileW * x, upStart + tileH * y - BunnyOffset);
+            }
+        }
+
         void pendingKeyboard() {
             if (event.type == sf::Event::KeyPressed) {
                 
                 if (event.key.code == sf::Keyboard::Escape) switchPause(); 
                 else
                 if (now == GAME && keyReleased) {
-                    if (event.key.code == sf::Keyboard::A) Bunny.moveleft(); 
-                    else
-                    if (event.key.code == sf::Keyboard::D) Bunny.moveright(); 
-                    else
-                    if (event.key.code == sf::Keyboard::W) Bunny.moveup(); 
-                    else
-                    if (event.key.code == sf::Keyboard::S) Bunny.movedown();
+                    if (event.key.code == sf::Keyboard::A) {
+                        Bunny.moveLeft();
+                        changeBunnyTilePos(-1, 0);
+                    } else  if (event.key.code == sf::Keyboard::D) {
+                        Bunny.moveRight(); 
+                        changeBunnyTilePos(1, 0);
+                    } else if (event.key.code == sf::Keyboard::W) {
+                        Bunny.moveUp();
+                        changeBunnyTilePos(0, -1);
+                    } else if (event.key.code == sf::Keyboard::S) {
+                        Bunny.moveDown();
+                        changeBunnyTilePos(0, 1);
+                    }
 
                     keyReleased = false;
                 }
@@ -118,9 +140,13 @@ class Universe {
         void genMap() {//функция генерации карты и получения основной информации о ней
             mymap.generateMap();
             theMap = mymap.getMap();
-            leftStart = mymap.getStartPoint().first;
-            upStart = mymap.getStartPoint().second;
-            Bunny.setPosition(mymap.getStartPos().first, mymap.getStartPos().second);
+            leftStart = mymap.getStartIslandPointPxls().first;
+            upStart = mymap.getStartIslandPointPxls().second;
+            //Bunny.setPosition(mymap.getStartCharacterPxlsPoint().first, mymap.getStartCharacterPxlsPoint().second);
+
+            tilePos = mymap.getStartCharacterTilePoint();
+            int offsety = 10;
+            Bunny.setPosition(tilePos.first * 16 + leftStart, tilePos.second * 16 + upStart - offsety);
         }
 
         void pendingMouse() {

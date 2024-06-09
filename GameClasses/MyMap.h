@@ -5,13 +5,26 @@
 #include <queue>
 #include <map>
 #include <algorithm>
+#include <string>
+/*
+switch mark
+1 - периметр
+2 - пустое простанство внутри острова
+3 - декоративные элементы
+4 - элемент взаимодействия
+5 - ограждение
+
+7 - место появления
+*/
+
 class MyMap {
 private:
 	std::vector<sf::Sprite> sprites;// спрайты которые мы будем отрисовывать, в том числе и повторяющиеся
 	std::vector<std::unique_ptr<Object>> objects;//объекты взаимодействия и анимации
 	//sprites хранит декоративные объекты с которыми нельзя взаимодействовать (плитки,цветочки, камешки)
 	//objects хранит объекты с которыми можно взаимодейстовать (дерево для сбора плодов, лодка)
-	std::pair<int, int> startPos;//позиция где будет появляться ГГ
+	std::pair<int, int> startPosTiles;
+	std::pair<int, int> startPosPxls;//позиция где будет появляться ГГ
 	enum TileType {//названия типа текстур
 		BACKGROUND,
 		FULL,
@@ -31,11 +44,15 @@ private:
 
 	size_t tileW = 16, tileH = 16;
 	size_t maxcountx, maxcounty;// количество тайлов в ширину и высоту
+
 	size_t leftStart, upStart;//верхняя левая вершина построения карты
+
 	int oXstart, oYstart;// локальный центр острова
 	std::unordered_map<TileType, sf::Texture> textures;//единичные экземпляры текстур для спрайта
 	//std::vector<std::pair<int, int>> mp;
 	std::vector<std::vector<int>> theMap;
+
+	
 
 
 	
@@ -352,15 +369,19 @@ private:
 		while (theMap[j][left++] != 1);
 		while (theMap[j][right--] != 1);
 		int i = rand() % (right - left + 1) + left;
-		theMap[j][i] = 7;//значение лодки
+		int mark = 7;
+		theMap[j][i] = mark;//значение лодки
 		x = leftStart + tileW * i;
 		y = upStart + tileH * j;
-		startPos = std::make_pair(x, y);//пусть стартовая позиция будет находиться у лодки
+
+		startPosTiles = std::make_pair(i, j);
+		startPosPxls = std::make_pair(x, y);//пусть стартовая позиция будет находиться у лодки
+
 		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
 	}
 
 	void addTrees() {
-		int mark = 9;
+		int mark = 4;
 
 		void* filebuffer = nullptr;
 		long filesize = 0;
@@ -431,10 +452,13 @@ private:
 			return theMap;
 		}
 
-		std::pair<size_t, size_t> getStartPoint() {
+		std::pair<size_t, size_t> getStartIslandPointPxls() {
 			return { leftStart, upStart };
 		}
-		std::pair<int, int> getStartPos() { return startPos; }
+
+		std::pair<int, int> getStartCharacterTilePoint() { return startPosTiles; }
+		std::pair<int, int> getStartCharacterPxlsPoint() { return startPosPxls; }
+		
 		void draw(sf::RenderWindow& window) {
 			for (auto& obj : sprites) window.draw(obj);
 			for (auto& obj : objects) {

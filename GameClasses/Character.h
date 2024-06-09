@@ -12,7 +12,7 @@ class Character {
 		Object right;
 		Object afk;
 		int posx, posy;
-		int velocity = 16;
+		//int velocity = 16;
 
 		enum Direction {
 			DOWN,
@@ -60,27 +60,19 @@ class Character {
 			}
 		}
 
-		
-		void moveleft() {
+		void moveLeft() {
 			direction = LEFT;
-			posx -= velocity;
 		}
-
-		void moveright() {
+		void moveRight() {
 			direction = RIGHT;
-			posx += velocity;
+		}
+		void moveUp(){
+			direction = UP;
+		}
+		void moveDown() {
+			direction = DOWN;
 		}
 		
-		void moveup() {
-			direction = UP;
-			posy -= velocity;
-		}
-
-		void movedown() {
-			direction = DOWN;
-			posy += velocity;
-		}
-
 		void setPosition(int x, int y) {
 			posx = x;
 			posy = y;
