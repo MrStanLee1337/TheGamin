@@ -40,7 +40,7 @@ class Object {
         std::vector<sf::Texture> animation;
         size_t frame = 0;
         const char* type = ""; // хранит тип объекта (кнопки, объекта) для определения с чем мы взимодействуем
-
+        bool isCyclic = true;
         
 	public:
         Object() {}
@@ -61,12 +61,13 @@ class Object {
             addPicture(filename);
             sprite.setPosition((float)x, (float)y);
         }
-        Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr) {
+        Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr, bool cycle = true) {
             for (auto img : images) {
                 addPicture(img);
             }
             sprite.setPosition((float)x, (float)y);
             frame = 0;
+            isCyclic = cycle;
         }
         
 
@@ -110,11 +111,15 @@ class Object {
         }
 
         void nextFrame() {
-            if (++frame == animation.size()) frame = 0;
+            ++frame;
+            if (frame >= animation.size() && isCyclic) frame = 0;
+            else if (frame >= animation.size() && !isCyclic) return;
             sprite.setTexture(animation[frame]);
-           
         }
 
+        void setCyclicity(bool makeCyclic) {
+            isCyclic = makeCyclic;
+        }
 
         bool isVisible() { return visibility; }
         bool setVisibility(bool b) { visibility = b; }
