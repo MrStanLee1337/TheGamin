@@ -33,7 +33,8 @@ class Universe {
         int tileW = 16;
         int tileH = 16;
         int BunnyOffset = 10;//сдвиг по вертикали (чтобы не казалось что ГГ ходит по самому краю берега)
-        bool keyReleased = true;// одно нажатие - одно действие
+
+        DWORD keyPressed = 0;// одно нажатие - одно действие раз в X тиков
 
         enum GameState {
             PAUSE,
@@ -127,30 +128,34 @@ class Universe {
                 
                 if (event.key.code == sf::Keyboard::Escape) switchPause(); 
                 else
-                if (now == GAME && keyReleased) {
+                if (now == GAME && keyPressed == 0) {
+                    //keyPressed = 30;
                     if (event.key.code == sf::Keyboard::A) {
                         Bunny.moveLeft();
                         changeBunnyTilePos(-1, 0);
+                        //--keyPressed;
                     } else  if (event.key.code == sf::Keyboard::D) {
                         Bunny.moveRight(); 
                         changeBunnyTilePos(1, 0);
+                        //--keyPressed;
                     } else if (event.key.code == sf::Keyboard::W) {
                         Bunny.moveUp();
                         changeBunnyTilePos(0, -1);
+                        //--keyPressed;
                     } else if (event.key.code == sf::Keyboard::S) {
                         Bunny.moveDown();
                         changeBunnyTilePos(0, 1);
+                       // --keyPressed;
                     } else if (event.key.code == sf::Keyboard::F) {
                         interaction();
-
+                        //--keyPressed;
                     }
 
-                    keyReleased = false;
                 }
-               
+                ++keyPressed %= 5;
             }
             else if (event.type == sf::Event::KeyReleased) {
-                keyReleased = true;
+                keyPressed = 0;
             }
         }
 
@@ -162,8 +167,8 @@ class Universe {
             //Bunny.setPosition(mymap.getStartCharacterPxlsPoint().first, mymap.getStartCharacterPxlsPoint().second);
 
             heroTilePos = mymap.getStartCharacterTilePoint();
-            int offsety = 10;
-            Bunny.setPosition(heroTilePos.first * 16 + leftStart, heroTilePos.second * 16 + upStart - offsety);
+            //int offsety = 10;
+            Bunny.setPosition(heroTilePos.first * 16 + leftStart, heroTilePos.second * 16 + upStart - BunnyOffset);
         }
 
         void pendingMouse() {

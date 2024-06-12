@@ -23,8 +23,8 @@ private:
 	std::vector<std::unique_ptr<Object>> objects;//объекты взаимодействия и анимации
 	//sprites хранит декоративные объекты с которыми нельзя взаимодействовать (плитки,цветочки, камешки)
 	//objects хранит объекты с которыми можно взаимодейстовать (дерево для сбора плодов, лодка)
-	std::pair<int, int> startPosTiles;
-	std::pair<int, int> startPosPxls;//позиция где будет появляться ГГ
+	std::pair<int, int> startPosTiles;//позиция ГГ в тайлах
+	std::pair<int, int> startPosPxls;//позиция где будет появляться ГГ в пикселях
 	enum TileType {//названия типа текстур
 		BACKGROUND,
 		FULL,
@@ -61,9 +61,6 @@ private:
 		return rand() % 100 < p;
 	}
 
-	
-
-	
 
 	void initStartPoint() {
 		oXstart = (rand() % (maxcountx / 3)) + maxcountx / 3;// начало оси оХ находится во 2 трети 
@@ -362,7 +359,7 @@ private:
 		addSprites(LEAFTWO, mark, 0, 6);
 	}
 
-	void addBoat() {// добавляем лодку у берега в случайное место по оси оХ
+	void addBoat() {// добавляем лодку у нижнего берега в случайное место по оси Ох
 		int j = maxcounty - 2;
 		int x, y;
 		int left = 0; int right = maxcountx - 1;
@@ -380,7 +377,7 @@ private:
 		objects.push_back(std::make_unique<Object>("tiles\\boat.png", x, y, "boat"));
 	}
 
-	void addTrees() {
+	void addTreesAndBushes() {
 		int mark = 4;
 
 		void* filebuffer = nullptr;
@@ -413,21 +410,27 @@ private:
 			//tree.copy(image, 0, 0, sf::IntRect(32,0,64,32));//голое дерево (следующий фрейм)
 			//(*last).addPicture(nakedTree);
 		}
-		sf::Image bush;
+
+		sf::Image bush;//куст
+		sf::Image nakedBush;//голый куст
 		bush.create(16, 16);
+		nakedBush.create(16, 16);
 		bush.copy(image, 0, 0, sf::IntRect(0, 32, 16, 48));
+		nakedBush.copy(image, 0, 0, sf::IntRect(16, 32, 32, 48));
 		int countBushes = 3;
 		while (countBushes--) {
 			int x = 0; int y = 0;
 			while (theMap[y][x] != 2) x = rand() % maxcountx, y = rand() % maxcounty;
 			theMap[y][x] = mark;
 			objects.push_back(std::make_unique<Object>(bush, leftStart + tileW * x, upStart + tileH * y, "bush"));
+			(*objects.back()).addPicture(nakedBush);
+			(*objects.back()).setCyclicity(false);
 		}
 	}
 
 	void addObjects() {
 		addBoat();
-		addTrees();
+		addTreesAndBushes();
 	}
 	
 	void addDecoration() {
