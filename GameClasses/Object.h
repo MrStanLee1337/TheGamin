@@ -10,7 +10,7 @@ bool getDataFromImage(const char* filename, void*& buffer, long& size) {
         fseek(file, 0, SEEK_END);
         long fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);
-
+        
         char* fileBuffer = (char*)malloc(fileSize);
         fread(fileBuffer, 1, fileSize, file);
         fclose(file);
@@ -62,7 +62,7 @@ class Object {
             sprite.setPosition((float)x, (float)y);
         }
         Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr, bool cycle = true) : type(type){
-            for (auto img : images) {
+            for (auto& img : images) {
                 addPicture(img);
             }
             sprite.setPosition((float)x, (float)y);
@@ -121,7 +121,7 @@ class Object {
             isCyclic = makeCyclic;
         }
 
-        bool isVisible() { return visibility; }
+        bool isVisible() const { return visibility; }
         bool setVisibility(bool b) { visibility = b; }
         sf::Texture getTexture() { return animation[frame]; }
 

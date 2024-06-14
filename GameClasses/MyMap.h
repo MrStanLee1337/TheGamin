@@ -477,7 +477,7 @@ private:
 						if (obj->getType() == "tree" && obj->isLastFrame()) obj->setType("stump");
 						return obj->getType();
 					}
-
+					if (obj->getType() == "boat") return obj->getType();
 					//if (obj->isLastFrame())
 						//return obj->getType();
 

@@ -19,7 +19,7 @@ int main() {
     Universe universe(window, WIDTH, HEIGHT);
     universe.init();
     universe.playMusic();
-    universe.playSound(TREE);
+    //universe.playSound(TREE);
 
 
     while (window.isOpen()) {

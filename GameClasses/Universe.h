@@ -48,7 +48,10 @@ class Universe {
 		void initmusic() {
             try {
                 sounds.SetMusic(BACK_MUSIC, MUSICFILE);
-                sounds.AddSound(TREE, MUSICFILE);
+                //sounds.AddSound(TREE, MUSICFILE);
+                //sounds.AddSound(SHSH, MUSICFILE);
+                sounds.AddSound(AXE, MUSICFILE);
+                sounds.AddSound(SHURSH, MUSICFILE);
             }
             catch (const std::exception& ex) {
                 std::cerr << ex.what() << '\n';
@@ -115,19 +118,28 @@ class Universe {
             if (typeOfInteract == "tree") {
                 for (auto& obj : collections) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
-                        if (ptr->getType() == "collecttree") ptr->nextFrame();
+                        if (ptr->getType() == "collecttree") {
+                            ptr->nextFrame();
+                            sounds.playSound(SHURSH);
+                        }
                     }
                 }
             } else if (typeOfInteract == "bush") {
                 for (auto& obj : collections) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
-                        if (ptr->getType() == "collectbush") ptr->nextFrame();
+                        if (ptr->getType() == "collectbush") {
+                            ptr->nextFrame();
+                            sounds.playSound(SHURSH);
+                        }
                     }
                 }
             } else if (typeOfInteract == "stump") {
                 for (auto& obj : collections) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
-                        if (ptr->getType() == "collectwood") ptr->nextFrame();
+                        if (ptr->getType() == "collectwood") {
+                            ptr->nextFrame();
+                            sounds.playSound(AXE);
+                        }
                     }
                 }
             } else if (typeOfInteract == "boat") {
@@ -271,9 +283,9 @@ class Universe {
             sounds.playMusic(true);
         }
 
-        void playSound(int lpName) {
-            sounds.playSound(lpName);
-        }
+        //void playSound(int lpName) {
+        //    sounds.playSound(lpName);
+        //}
 
         
         void init() {
