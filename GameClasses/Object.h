@@ -61,7 +61,7 @@ class Object {
             addPicture(filename);
             sprite.setPosition((float)x, (float)y);
         }
-        Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr, bool cycle = true) {
+        Object(std::vector<sf::Image> images, int x, int y, const char* type = nullptr, bool cycle = true) : type(type){
             for (auto img : images) {
                 addPicture(img);
             }
@@ -132,5 +132,16 @@ class Object {
         const char* getType() {
             return type;
         }
+        void setType(const char* ctype) {
+            type = ctype;
+        }
+
+        bool isLastFrame() {
+            return frame == animation.size() - 1;
+        }
+        bool isFrameInAnimation() {
+            return frame < animation.size() - 1;
+        }
+
 };
 

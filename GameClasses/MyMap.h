@@ -405,7 +405,7 @@ private:
 			theMap[y][x] = mark, theMap[y + 1][x] = mark, theMap[y][x + 1] = mark, theMap[y + 1][x + 1] = mark;
 
 			//Object obj(tree, leftStart + tileW * x, upStart + tileH * y, "boat");
-			objects.push_back(std::make_unique<Object>(trees, leftStart + tileW * x, upStart + tileH * y, "boat", false));
+			objects.push_back(std::make_unique<Object>(trees, leftStart + tileW * x, upStart + tileH * y, "tree", false));
 			//auto& last = objects.back();
 			//tree.copy(image, 0, 0, sf::IntRect(32,0,64,32));//голое дерево (следующий фрейм)
 			//(*last).addPicture(nakedTree);
@@ -466,14 +466,26 @@ private:
 
 		}
 		
-		void isInteracted(int x, int y) {
+		std::string typeOfInteraction(int x, int y) {
 			for (auto& obj : objects) {
 				if (obj->isClicked(x, y)) {
-					obj->nextFrame();
-					//std::cout << "NextFramed\n";
+					std::string type = obj->getType();
+
+					
+					if (obj->isFrameInAnimation()) {
+						obj->nextFrame();
+						if (obj->getType() == "tree" && obj->isLastFrame()) obj->setType("stump");
+						return obj->getType();
+					}
+
+					//if (obj->isLastFrame())
+						//return obj->getType();
+
 				}
 			}
+			return "";
 		}
+
 
 		std::vector<std::vector<int>> getMap() {
 			return theMap;

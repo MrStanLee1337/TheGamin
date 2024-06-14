@@ -17,6 +17,7 @@ class Universe {
 		gm::GameMusic sounds;
         //std::vector<std::unique_ptr<Object>> tiles;
         std::vector<std::unique_ptr<Object>> pausemenu;
+        std::vector<std::unique_ptr<Object>> collections;//объекты коллекций сбора урожая
         sf::RenderWindow& window;
         
         sf::Cursor cursor;
@@ -42,6 +43,7 @@ class Universe {
             EXIT
         } now = PAUSE;
 
+        size_t countOfRes = 0;
 
 		void initmusic() {
             try {
@@ -109,18 +111,48 @@ class Universe {
             }
         }
 
+        void activeInteraction(std::string typeOfInteract) {
+            if (typeOfInteract == "tree") {
+                for (auto& obj : collections) {
+                    if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+                        if (ptr->getType() == "collecttree") ptr->nextFrame();
+                    }
+                }
+            } else if (typeOfInteract == "bush") {
+                for (auto& obj : collections) {
+                    if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+                        if (ptr->getType() == "collectbush") ptr->nextFrame();
+                    }
+                }
+            } else if (typeOfInteract == "stump") {
+                for (auto& obj : collections) {
+                    if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+                        if (ptr->getType() == "collectwood") ptr->nextFrame();
+                    }
+                }
+            } else if (typeOfInteract == "boat") {
+                genMap();
+            }
+        }
+
         void interaction() {
-            int dx[] = { -1,1,0,0 };
+            int dx[] = { -1, 1, 0, 0 };
             int dy[] = { 0, 0, -1, 1 };
+            std::string typeOfInteract = "";
             for (int i = 0; i < std::size(dx); i++) {
                 int newx = dx[i] + heroTilePos.first;
                 int newy = dy[i] + heroTilePos.second;
                 if (newx >= 0 && newx < theMap[0].size() && newy >= 0 && newy < theMap.size()) {
                     newx = leftStart + tileW * newx;
                     newy = upStart + tileH * newy;
-                    mymap.isInteracted(newx, newy);
+                    typeOfInteract = mymap.typeOfInteraction(newx, newy);
+                    if (typeOfInteract != "") break;
+                    //_debug(countOfRes);
                 }
             }
+
+            activeInteraction(typeOfInteract);
+
         }
 
         void pendingKeyboard() {
@@ -189,6 +221,48 @@ class Universe {
             }
         }
 
+        void initHarvestCollections() {//счётчик сбора урожая
+            void* filebuffer = nullptr;
+            long filesize = 0;
+            sf::Image image;
+            
+            if (!getDataFromImage("tiles\\harvestbush.png", filebuffer, filesize)) throw std::runtime_error("Can't open harvestbush.png file");
+            
+            image.loadFromMemory(filebuffer, filesize);
+            std::vector<sf::Image> collectbush;
+            for (int i = 0; i <= 5; i++) {
+                sf::Image harvestBushImage;
+                harvestBushImage.create(150, 35);
+                harvestBushImage.copy(image, 0, 0, sf::IntRect(0, i * 35, 150, (i + 1) * 35));
+                collectbush.push_back(harvestBushImage);
+            }
+            collections.push_back(std::make_unique<Object>(collectbush, WIDTH - 160, 30, "collectbush", false));
+
+            if (!getDataFromImage("tiles\\harvesttree.png", filebuffer, filesize)) throw std::runtime_error("Can't open harvesttree.png file");
+
+            image.loadFromMemory(filebuffer, filesize);
+            std::vector<sf::Image> collecttree;
+            for (int i = 0; i <= 3; i++) {
+                sf::Image harvestTreeImage;
+                harvestTreeImage.create(150, 35);
+                harvestTreeImage.copy(image, 0, 0, sf::IntRect(0, i * 35, 150, (i + 1) * 35));
+                collecttree.push_back(harvestTreeImage);
+            }
+            collections.push_back(std::make_unique<Object>(collecttree, WIDTH - 160, 70, "collecttree", false));
+
+            if (!getDataFromImage("tiles\\harvestwood.png", filebuffer, filesize)) throw std::runtime_error("Can't open harvestwood.png file");
+
+            image.loadFromMemory(filebuffer, filesize);
+            std::vector<sf::Image> collectwood;
+            for (int i = 0; i <= 3; i++) {
+                sf::Image harvestWoodImage;
+                harvestWoodImage.create(150,35);
+                harvestWoodImage.copy(image, 0, 0, sf::IntRect(0, i * 35, 150, (i + 1) * 35));
+                collectwood.push_back(harvestWoodImage);
+            }
+            collections.push_back(std::make_unique<Object>(collectwood, WIDTH - 160, 110, "collectwood", false));
+        }
+
 	public:
         
         Universe(sf::RenderWindow& window, int WIDTH, int HEIGHT) :window(window), WIDTH(WIDTH), HEIGHT(HEIGHT) {}
@@ -201,7 +275,9 @@ class Universe {
             sounds.playSound(lpName);
         }
 
+        
         void init() {
+            
             Bunny.initAnimation();
             mymap.initTiles();
             genMap();
@@ -209,6 +285,7 @@ class Universe {
             //inittiles();
             initcursor();
             initpause();
+            initHarvestCollections();//1
         }
 
         void tickrate() {
@@ -265,6 +342,13 @@ class Universe {
             
             if (now == PAUSE) {
                 for (auto& obj : pausemenu) {
+                    if (auto ptr = dynamic_cast<Object*>(&*obj)) {
+                        ptr->draw(window);
+                    }
+                }
+            }
+            else if (now == GAME) {
+                for (auto& obj : collections) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
                         ptr->draw(window);
                     }
