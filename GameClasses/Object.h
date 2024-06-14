@@ -122,7 +122,7 @@ class Object {
         }
 
         bool isVisible() const { return visibility; }
-        bool setVisibility(bool b) { visibility = b; }
+        void setVisibility(bool b) { visibility = b; }
         sf::Texture getTexture() { return animation[frame]; }
 
         bool isClicked(int x, int y) {

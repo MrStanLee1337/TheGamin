@@ -18,6 +18,10 @@ class Universe {
         //std::vector<std::unique_ptr<Object>> tiles;
         std::vector<std::unique_ptr<Object>> pausemenu;
         std::vector<std::unique_ptr<Object>> collections;//объекты коллекций сбора урожая
+
+        //std::vector<std::unique_ptr<Object>> envelope;//письмо
+        std::unique_ptr<Object> envelope;
+
         sf::RenderWindow& window;
         
         sf::Cursor cursor;
@@ -226,9 +230,14 @@ class Universe {
                                 if (ptr->getType() == "exit") exit();
                                 if (ptr->getType() == "play") game();
                                 if (ptr->getType() == "newmap") genMap();
+                          
                             }
                         }
                     }
+                } 
+                if (now == GAME && envelope->isVisible() == true) {
+                    if (envelope->isLastFrame()) envelope->setVisibility(false);
+                    if (envelope->isClicked(x, y)) envelope->nextFrame();
                 }
             }
         }
@@ -275,6 +284,25 @@ class Universe {
             collections.push_back(std::make_unique<Object>(collectwood, WIDTH - 160, 110, "collectwood", false));
         }
 
+        void initEnvelope() {
+            void* filebuffer = nullptr;
+            long filesize = 0;
+            if (!getDataFromImage("tiles\\envelope.png", filebuffer, filesize)) throw std::runtime_error("Can't open envelope.png file");
+            sf::Image image;
+            image.loadFromMemory(filebuffer, filesize);
+            std::vector<sf::Image> collect;
+            for (int i = 0; i < 3; i++) {
+                sf::Image img;
+                img.create(455, 539);
+                img.copy(image, 0, 0, sf::IntRect(0, 540 * i, 455, (i + 1) * 540));
+                collect.push_back(img);
+            }
+            //Object obj = Object();
+            envelope = std::make_unique<Object>(collect, WIDTH / 4, HEIGHT / 6, "envelope", false);
+            //envelope.push_back(std::make_unique<Object> (collect, WIDTH / 4, HEIGHT / 6, "envelope", false));
+            //envelope = std::make_unique<Object>(collect, WIDTH / 4, HEIGHT / 6, "envelope", false);
+        }
+
 	public:
         
         Universe(sf::RenderWindow& window, int WIDTH, int HEIGHT) :window(window), WIDTH(WIDTH), HEIGHT(HEIGHT) {}
@@ -294,10 +322,10 @@ class Universe {
             mymap.initTiles();
             genMap();
             initmusic();
-            //inittiles();
             initcursor();
             initpause();
-            initHarvestCollections();//1
+            initHarvestCollections();
+            initEnvelope();
         }
 
         void tickrate() {
@@ -352,6 +380,7 @@ class Universe {
             if (!(ticks % 20)) Bunny.nextFrame();
             Bunny.draw(window);
             
+            
             if (now == PAUSE) {
                 for (auto& obj : pausemenu) {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
@@ -364,6 +393,9 @@ class Universe {
                     if (auto ptr = dynamic_cast<Object*>(&*obj)) {
                         ptr->draw(window);
                     }
+                }
+                if (envelope->isVisible() == true) {
+                    envelope->draw(window);
                 }
             }
             
