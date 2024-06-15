@@ -113,7 +113,10 @@ class Object {
         void nextFrame() {
             ++frame;
             if (frame >= animation.size() && isCyclic) frame = 0;
-            else if (frame >= animation.size() && !isCyclic) return;
+            else if (frame >= animation.size() && !isCyclic)  {
+                frame = animation.size() - 1;
+                return;
+            }
             sprite.setTexture(animation[frame]);
         }
 

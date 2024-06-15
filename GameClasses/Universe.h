@@ -17,10 +17,14 @@ class Universe {
 		gm::GameMusic sounds;
         //std::vector<std::unique_ptr<Object>> tiles;
         std::vector<std::unique_ptr<Object>> pausemenu;
-        std::vector<std::unique_ptr<Object>> collections;//объекты коллекций сбора урожая
 
-        //std::vector<std::unique_ptr<Object>> envelope;//письмо
-        std::unique_ptr<Object> envelope;
+        std::vector<std::unique_ptr<Object>> collections;//объекты коллекций сбора урожая
+        size_t harvestCount;
+
+
+        std::unique_ptr<Object> envelope;//письмо
+        std::unique_ptr<Object> settings;//wasd - ходить f - взаимодействовать
+        std::unique_ptr<Object> theend;
 
         sf::RenderWindow& window;
         
@@ -44,7 +48,8 @@ class Universe {
         enum GameState {
             PAUSE,
             GAME,
-            EXIT
+            EXIT, 
+            GAMEOVER
         } now = PAUSE;
 
         size_t countOfRes = 0;
@@ -197,6 +202,9 @@ class Universe {
                     } else if (event.key.code == sf::Keyboard::F) {
                         interaction();
                         //--keyPressed;
+                        if (isGameOver()) {
+                            now = GAMEOVER;
+                        }
                     }
 
                 }
@@ -235,9 +243,12 @@ class Universe {
                         }
                     }
                 } 
-                if (now == GAME && envelope->isVisible() == true) {
+                if (now == GAME && envelope->isVisible()) {
                     if (envelope->isLastFrame()) envelope->setVisibility(false);
                     if (envelope->isClicked(x, y)) envelope->nextFrame();
+                }
+                if (now == GAMEOVER) {
+                    if (theend->isClicked(x, y)) exit();
                 }
             }
         }
@@ -303,6 +314,33 @@ class Universe {
             //envelope = std::make_unique<Object>(collect, WIDTH / 4, HEIGHT / 6, "envelope", false);
         }
 
+        void initSettings() {
+            void* filebuffer = nullptr;
+            long filesize = 0;
+            if (!getDataFromImage("tiles\\settings.png", filebuffer, filesize)) throw std::runtime_error("Can't open settings.png file.");
+            sf::Image image;
+            image.loadFromMemory(filebuffer, filesize);
+            settings = std::make_unique<Object>(image, WIDTH - 200, HEIGHT - 200, "settings");
+        }
+
+        bool isGameOver() {//игра закончится когда игрок соберет все ресурсы
+            for (auto& x : collections) {
+                if(x->isLastFrame() == false) return false;
+            }
+            return true;
+        }
+
+        void initEnding() {
+            void* filebuffer = nullptr;
+            long filesize = 0;
+            if (!getDataFromImage("tiles\\theend.png", filebuffer, filesize)) throw std::runtime_error("Can't open ");
+            sf::Image image;
+            image.loadFromMemory(filebuffer, filesize);
+            theend = std::make_unique<Object>(image, WIDTH / 3, HEIGHT / 3, "theend");
+           
+
+        }
+
 	public:
         
         Universe(sf::RenderWindow& window, int WIDTH, int HEIGHT) :window(window), WIDTH(WIDTH), HEIGHT(HEIGHT) {}
@@ -326,6 +364,8 @@ class Universe {
             initpause();
             initHarvestCollections();
             initEnvelope();
+            initSettings();
+            initEnding();
         }
 
         void tickrate() {
@@ -352,7 +392,7 @@ class Universe {
                 pendingMouse();
             }
         }
-
+        
         void state() {
             switch (now) {
                 case PAUSE:
@@ -364,9 +404,12 @@ class Universe {
                 case EXIT:
                     exit();
                     break;
+                case GAMEOVER:
+                    //gameover();
+                    break;
             }
         }
-
+        
         void draw() {
             /*
             for (auto& obj : tiles) {
@@ -394,9 +437,16 @@ class Universe {
                         ptr->draw(window);
                     }
                 }
-                if (envelope->isVisible() == true) {
+                if (envelope->isVisible()) {
                     envelope->draw(window);
                 }
+                if (settings->isVisible()) {
+                    settings->draw(window);
+                }
+                
+            }
+            else if (now == GAMEOVER) {
+                theend->draw(window);
             }
             
         }
